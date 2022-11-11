@@ -164,6 +164,12 @@ class Simulator {
     _maxSimTime = newMaxSimTime;
   }
 
+  /// Function that throw exception
+  static void throwException(Exception exception) {
+    endSimulation();
+    throw exception;
+  }
+
   /// Registers an abritrary [action] to be executed at [timestamp] time.
   static void registerAction(int timestamp, void Function() action) {
     if (timestamp <= _currentTimestamp) {

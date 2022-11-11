@@ -345,7 +345,8 @@ class Sequential extends _Always {
             _pendingExecute = false;
           }).catchError((dynamic err) {
             if (err is Exception) {
-              Simulator.exception = err;
+              // Simulator.exception = err;
+              Simulator.throwException(err);
             }
           }));
         }
