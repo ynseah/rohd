@@ -9,10 +9,11 @@
 ///
 
 import 'package:rohd/rohd.dart';
+import 'package:rohd/src/exceptions/rohd_exception.dart';
 
 /// An exception that thrown when bus `startIndex` and `endIndex` is not greater
 /// or equal to zero.
-class InvalidStartEndIndexException implements Exception {
+class InvalidStartEndIndexException extends RohdException {
   /// Display error [message] on [startIndex] and [endIndex]
   /// which smaller than zero.
   ///
@@ -27,9 +28,7 @@ class InvalidStartEndIndexException implements Exception {
 }
 
 /// An exception that thrown when bus index is out of bound.
-class InvalidOutOfBoundIndexException implements Exception {
-  late final String _message;
-
+class InvalidOutOfBoundIndexException extends RohdException {
   /// Display error [message] on index out of bound which indicate [startIndex]
   /// and [endIndex] must be less than [width].
   ///
@@ -40,20 +39,15 @@ class InvalidOutOfBoundIndexException implements Exception {
       required int endIndex,
       required int width,
       String? message}) {
-    _message = message ??
+    super.message = message ??
         'Index out of bounds, indices $startIndex and $endIndex must be less'
             ' than $width';
   }
-
-  @override
-  String toString() => _message;
 }
 
 /// An exception that thrown when custom verilog inputs
 /// to be injected more than one.
-class InvalidMultipleInputException implements Exception {
-  late final String _message;
-
+class InvalidMultipleInputException extends RohdException {
   /// Display error [message] on when [inputs] expected to be
   /// only one in bus subset.
   ///
@@ -61,18 +55,14 @@ class InvalidMultipleInputException implements Exception {
   /// optional error [message].
   InvalidMultipleInputException(
       {required Map<String, String> inputs, String? message}) {
-    _message = message ?? 'BusSubset has exactly one input, but saw $inputs.';
+    super.message =
+        message ?? 'BusSubset has exactly one input, but saw $inputs.';
   }
-
-  @override
-  String toString() => _message;
 }
 
 /// An exception that thrown when swizzle input length
 /// and not same as inputs length.
-class InvalidLengthException implements Exception {
-  late final String _message;
-
+class InvalidLengthException extends RohdException {
   /// Display error [message] on length mismatch between [swizzleInputs] and
   /// [inputs].
   ///
@@ -81,11 +71,8 @@ class InvalidLengthException implements Exception {
       {required List<Logic> swizzleInputs,
       required Map<String, String> inputs,
       String? message}) {
-    _message = message ??
+    super.message = message ??
         'This swizzle has ${swizzleInputs.length} inputs,'
             ' but saw $inputs with ${inputs.length} values.';
   }
-
-  @override
-  String toString() => _message;
 }
