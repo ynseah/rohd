@@ -9,6 +9,7 @@
 ///
 
 import 'package:rohd/rohd.dart';
+import 'package:rohd/src/exceptions/modules/bus_exceptions.dart';
 
 /// A [Module] which gives access to a subset range of signals of the input.
 ///
@@ -40,15 +41,13 @@ class BusSubset extends Module with InlineSystemVerilog {
     // If a converted index value is still -ve then it's an Index out of bounds
     // on a Logic Bus
     if (startIndex < 0 || endIndex < 0) {
-      throw Exception(
-          'Start ($startIndex) and End ($endIndex) must be greater than or '
-          'equal to 0.');
+      throw InvalidStartEndIndexException(
+          startIndex: startIndex, endIndex: endIndex);
     }
     // If the +ve indices are more than Logic bus width, Index out of bounds
     if (endIndex > bus.width - 1 || startIndex > bus.width - 1) {
-      throw Exception(
-          'Index out of bounds, indices $startIndex and $endIndex must be less'
-          ' than ${bus.width}');
+      throw InvalidOutOfBoundIndexException(
+          startIndex: startIndex, endIndex: endIndex, width: bus.width);
     }
 
     // original name can't be unpreferred because you cannot do a bit slice
@@ -89,7 +88,7 @@ class BusSubset extends Module with InlineSystemVerilog {
   @override
   String inlineVerilog(Map<String, String> inputs) {
     if (inputs.length != 1) {
-      throw Exception('BusSubset has exactly one input, but saw $inputs.');
+      throw InvalidMultipleInputException(inputs: inputs);
     }
     final a = inputs[_original]!;
 
@@ -154,8 +153,8 @@ class Swizzle extends Module with InlineSystemVerilog {
   @override
   String inlineVerilog(Map<String, String> inputs) {
     if (inputs.length != _swizzleInputs.length) {
-      throw Exception('This swizzle has ${_swizzleInputs.length} inputs,'
-          ' but saw $inputs with ${inputs.length} values.');
+      throw InvalidLengthException(
+          swizzleInputs: _swizzleInputs, inputs: inputs);
     }
     final inputStr = _swizzleInputs.reversed
         .where((e) => e.width > 0)
