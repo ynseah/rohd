@@ -9,6 +9,7 @@
 ///
 
 import 'package:rohd/rohd.dart';
+import 'package:rohd/src/exceptions/modules/bus_exceptions.dart';
 
 /// A very simple clock generator.  Generates a non-synthesizable SystemVerilog
 /// representation.
@@ -41,9 +42,7 @@ class SimpleClockGenerator extends Module with CustomSystemVerilog {
   String instantiationVerilog(String instanceType, String instanceName,
       Map<String, String> inputs, Map<String, String> outputs) {
     if (inputs.isNotEmpty || outputs.length != 1) {
-      throw Exception(
-          'SimpleClockGenerator has exactly one output and no inputs,'
-          ' but saw inputs $inputs and outputs $outputs.');
+      throw InvalidMultipleInputException(inputs: inputs);
     }
     final clk = outputs['clk']!;
     return '''

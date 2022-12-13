@@ -55,8 +55,7 @@ class InvalidMultipleInputException extends RohdException {
   /// optional error [message].
   InvalidMultipleInputException(
       {required Map<String, String> inputs, String? message}) {
-    super.message =
-        message ?? 'BusSubset has exactly one input, but saw $inputs.';
+    super.message = message ?? 'Object has exactly one input, but saw $inputs.';
   }
 }
 
