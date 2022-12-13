@@ -9,6 +9,7 @@
 ///
 
 import 'package:rohd/rohd.dart';
+import 'package:rohd/src/exceptions/modules/pipeline_exceptions.dart';
 
 /// Information and accessors associated with a [Pipeline] stage.
 class PipelineStageInfo {
@@ -135,8 +136,8 @@ class Pipeline {
   void _setStalls(List<Logic?>? stalls) {
     if (stalls != null) {
       if (stalls.length != _numStages - 1) {
-        throw Exception('Stall list length (${stalls.length}) must match '
-            'number of stages (${_numStages - 1}).');
+        throw MismatchStageNumException(
+            stallsLength: stalls.length, stageNum: _numStages);
       }
       for (var i = 0; i < _numStages - 1; i++) {
         final stall = stalls[i];
@@ -144,7 +145,7 @@ class Pipeline {
           continue;
         }
         if (stall.width != 1) {
-          throw Exception('Stall signal must be 1 bit, but found $stall.');
+          throw MismatchSignalsException(stall: stall);
         }
         _stages[i].stall = stall;
       }
