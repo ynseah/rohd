@@ -1,3 +1,5 @@
+import 'package:rohd/src/exceptions/rohd_exception.dart';
+
 /// Copyright (C) 2022 Intel Corporation
 /// SPDX-License-Identifier: BSD-3-Clause
 ///
@@ -9,18 +11,14 @@
 ///
 
 /// An exception that thrown when a reserved name is invalid.
-class InvalidReservedNameException implements Exception {
-  late final String _message;
-
+class InvalidReservedNameException extends RohdException {
   /// Display error [message] on invalid reserved name.
   ///
   /// Creates a [InvalidReservedNameException] with an optional error [message].
   InvalidReservedNameException(
       [String message = 'Reserved Name need to follow proper naming '
           'convention if reserved'
-          ' name set to true'])
-      : _message = message;
-
-  @override
-  String toString() => _message;
+          ' name set to true']) {
+    super.message = message;
+  }
 }
