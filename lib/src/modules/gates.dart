@@ -9,6 +9,7 @@
 ///
 
 import 'package:rohd/rohd.dart';
+import 'package:rohd/src/exceptions/modules/gates_exceptions.dart';
 
 /// A gate [Module] that performs bit-wise inversion.
 class NotGate extends Module with InlineSystemVerilog {
@@ -51,7 +52,7 @@ class NotGate extends Module with InlineSystemVerilog {
   @override
   String inlineVerilog(Map<String, String> inputs) {
     if (inputs.length != 1) {
-      throw Exception('Gate has exactly one input.');
+      throw MultipleInputGateException();
     }
     final a = inputs[_inName]!;
     return '~$a';
@@ -114,7 +115,7 @@ class _OneInputUnaryGate extends Module with InlineSystemVerilog {
   @override
   String inlineVerilog(Map<String, String> inputs) {
     if (inputs.length != 1) {
-      throw Exception('Gate has exactly one input.');
+      throw MultipleInputGateException();
     }
     final in_ = inputs[_inName]!;
     return '$_opStr$in_';
@@ -167,8 +168,7 @@ abstract class _TwoInputBitwiseGate extends Module with InlineSystemVerilog {
       {String name = 'gate2'})
       : super(name: name) {
     if (in1 is Logic && in0.width != in1.width) {
-      throw Exception('Input widths must match,'
-          ' but found $in0 and $in1 with different widths.');
+      throw MismatchInputWidthException(in0: _in0, in1: _in1);
     }
 
     final in1Logic = in1 is Logic ? in1 : Const(in1, width: in0.width);
@@ -210,7 +210,7 @@ abstract class _TwoInputBitwiseGate extends Module with InlineSystemVerilog {
   @override
   String inlineVerilog(Map<String, String> inputs) {
     if (inputs.length != 2) {
-      throw Exception('Gate has exactly two inputs.');
+      throw TwoInputGateException();
     }
     final in0 = inputs[_in0Name]!;
     final in1 = inputs[_in1Name]!;
@@ -263,8 +263,7 @@ abstract class _TwoInputComparisonGate extends Module with InlineSystemVerilog {
       {String name = 'cmp2'})
       : super(name: name) {
     if (in1 is Logic && in0.width != in1.width) {
-      throw Exception('Input widths must match,'
-          ' but found $in0 and $in1 with different widths.');
+      throw MismatchInputWidthException(in0: _in0, in1: _in1);
     }
 
     final in1Logic = in1 is Logic ? in1 : Const(in1, width: in0.width);
@@ -299,7 +298,7 @@ abstract class _TwoInputComparisonGate extends Module with InlineSystemVerilog {
   @override
   String inlineVerilog(Map<String, String> inputs) {
     if (inputs.length != 2) {
-      throw Exception('Gate has exactly two inputs.');
+      throw TwoInputGateException();
     }
     final in0 = inputs[_in0Name]!;
     final in1 = inputs[_in1Name]!;
@@ -385,7 +384,7 @@ class _ShiftGate extends Module with InlineSystemVerilog {
   @override
   String inlineVerilog(Map<String, String> inputs) {
     if (inputs.length != 2) {
-      throw Exception('Gate has exactly two inputs.');
+      throw TwoInputGateException();
     }
     final in_ = inputs[_inName]!;
     final shiftAmount = inputs[_shiftAmountName]!;
@@ -599,10 +598,10 @@ class Mux extends Module with InlineSystemVerilog {
   /// on if [control] is 0 or 1, respectively.
   Mux(Logic control, Logic d1, Logic d0, {super.name = 'mux'}) {
     if (control.width != 1) {
-      throw Exception('Control must be single bit Logic, but found $control.');
+      throw SingleBitException(control: control);
     }
     if (d0.width != d1.width) {
-      throw Exception('d0 ($d0) and d1 ($d1) must be same width');
+      throw MismatchInputWidthException(in0: d0, in1: d1);
     }
 
     _controlName = Module.unpreferredName('control_${control.name}');
@@ -647,7 +646,7 @@ class Mux extends Module with InlineSystemVerilog {
   @override
   String inlineVerilog(Map<String, String> inputs) {
     if (inputs.length != 3) {
-      throw Exception('Mux2 has exactly three inputs.');
+      throw ThreeInputMuxException();
     }
     final d0 = inputs[_d0Name]!;
     final d1 = inputs[_d1Name]!;
@@ -716,7 +715,7 @@ class IndexGate extends Module with InlineSystemVerilog {
   @override
   String inlineVerilog(Map<String, String> inputs) {
     if (inputs.length != 2) {
-      throw Exception('Gate has exactly two inputs.');
+      throw TwoInputGateException();
     }
 
     final target = inputs[_originalName]!;
@@ -771,7 +770,7 @@ class ReplicationOp extends Module with InlineSystemVerilog {
   @override
   String inlineVerilog(Map<String, String> inputs) {
     if (inputs.length != 1) {
-      throw Exception('Gate has exactly one input.');
+      throw OneInputGateException();
     }
 
     final target = inputs[_inputName]!;
