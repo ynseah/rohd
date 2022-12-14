@@ -16,9 +16,7 @@ class InvalidReservedNameException extends RohdException {
   ///
   /// Creates a [InvalidReservedNameException] with an optional error [message].
   InvalidReservedNameException(
-      [String message = 'Reserved Name need to follow proper naming '
+      [super.message = 'Reserved Name need to follow proper naming '
           'convention if reserved'
-          ' name set to true']) {
-    super.message = message;
-  }
+          ' name set to true']);
 }

@@ -52,7 +52,7 @@ class NotGate extends Module with InlineSystemVerilog {
   @override
   String inlineVerilog(Map<String, String> inputs) {
     if (inputs.length != 1) {
-      throw MultipleInputGateException();
+      throw OneInputGateException();
     }
     final a = inputs[_inName]!;
     return '~$a';
@@ -115,7 +115,7 @@ class _OneInputUnaryGate extends Module with InlineSystemVerilog {
   @override
   String inlineVerilog(Map<String, String> inputs) {
     if (inputs.length != 1) {
-      throw MultipleInputGateException();
+      throw OneInputGateException();
     }
     final in_ = inputs[_inName]!;
     return '$_opStr$in_';
@@ -168,7 +168,7 @@ abstract class _TwoInputBitwiseGate extends Module with InlineSystemVerilog {
       {String name = 'gate2'})
       : super(name: name) {
     if (in1 is Logic && in0.width != in1.width) {
-      throw MismatchInputWidthException(in0: _in0, in1: _in1);
+      throw MismatchInputWidthException(_in0, _in1);
     }
 
     final in1Logic = in1 is Logic ? in1 : Const(in1, width: in0.width);
@@ -263,7 +263,7 @@ abstract class _TwoInputComparisonGate extends Module with InlineSystemVerilog {
       {String name = 'cmp2'})
       : super(name: name) {
     if (in1 is Logic && in0.width != in1.width) {
-      throw MismatchInputWidthException(in0: _in0, in1: _in1);
+      throw MismatchInputWidthException(_in0, _in1);
     }
 
     final in1Logic = in1 is Logic ? in1 : Const(in1, width: in0.width);
@@ -598,10 +598,10 @@ class Mux extends Module with InlineSystemVerilog {
   /// on if [control] is 0 or 1, respectively.
   Mux(Logic control, Logic d1, Logic d0, {super.name = 'mux'}) {
     if (control.width != 1) {
-      throw SingleBitException(control: control);
+      throw SingleBitException(control);
     }
     if (d0.width != d1.width) {
-      throw MismatchInputWidthException(in0: d0, in1: d1);
+      throw MismatchInputWidthException(d0, d1);
     }
 
     _controlName = Module.unpreferredName('control_${control.name}');

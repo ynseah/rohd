@@ -12,53 +12,36 @@ import 'package:rohd/rohd.dart';
 import 'package:rohd/src/exceptions/rohd_exception.dart';
 
 ///
-class MultipleInputGateException extends RohdException {
-  ///
-  MultipleInputGateException({String? message}) {
-    super.message = message ?? 'Gate has exactly one input.';
-  }
-}
-
-///
 class MismatchInputWidthException extends RohdException {
   ///
-  MismatchInputWidthException(
-      {required Logic in0, required Logic in1, String? message}) {
-    super.message = message ??
-        'Input widths must match, '
-            'but found $in0 and $in1 with different widths.';
-  }
+  MismatchInputWidthException(Logic in0, Logic in1, [String? message])
+      : super(message = message ??
+            'Port widths must match, '
+                'but found $in0 and $in1 with different widths.');
 }
 
 ///
 class OneInputGateException extends RohdException {
   ///
-  OneInputGateException({String? message}) {
-    super.message = message ?? 'Gate has exactly one input.';
-  }
+  OneInputGateException([super.message = 'Gate has exactly one input.']);
 }
 
 ///
 class TwoInputGateException extends RohdException {
   ///
-  TwoInputGateException({String? message}) {
-    super.message = message ?? 'Gate has exactly two inputs.';
-  }
+  TwoInputGateException([super.message = 'Gate has exactly two inputs.']);
 }
 
 ///
 class SingleBitException extends RohdException {
   ///
-  SingleBitException({required Logic control, String? message}) {
-    super.message =
-        message ?? 'Control must be single bit Logic, but found $control.';
-  }
+  SingleBitException(Logic control, [String? message])
+      : super(
+            message ?? 'Control must be single bit Logic, but found $control.');
 }
 
 ///
 class ThreeInputMuxException extends RohdException {
   ///
-  ThreeInputMuxException({String? message}) {
-    super.message = message ?? 'Mux2 has exactly three inputs.';
-  }
+  ThreeInputMuxException([super.message = 'Mux2 has exactly three inputs.']);
 }

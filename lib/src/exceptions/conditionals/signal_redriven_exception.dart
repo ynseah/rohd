@@ -19,8 +19,6 @@ class SignalRedrivenException extends RohdException {
   ///
   /// Creates a [SignalRedrivenException] with an optional error [message].
   SignalRedrivenException(String signals,
-      [String message =
-          'Sequential drove the same signal(s) multiple times: ']) {
-    super.message = message + signals;
-  }
+      [String message = 'Sequential drove the same signal(s) multiple times: '])
+      : super(message = message + signals);
 }

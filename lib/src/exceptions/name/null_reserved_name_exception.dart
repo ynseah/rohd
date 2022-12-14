@@ -16,8 +16,6 @@ class NullReservedNameException extends RohdException {
   ///
   /// Creates a [NullReservedNameException] with an optional error [message].
   NullReservedNameException(
-      [String message = 'Reserved Name cannot be null '
-          'if reserved name set to true']) {
-    super.message = message;
-  }
+      [super.message = 'Reserved Name cannot be null '
+          'if reserved name set to true']);
 }

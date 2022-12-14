@@ -1,3 +1,5 @@
+import 'package:meta/meta.dart';
+
 /// Copyright (C) 2022 Intel Corporation
 /// SPDX-License-Identifier: BSD-3-Clause
 ///
@@ -10,7 +12,10 @@
 
 abstract class RohdException implements Exception {
   /// The custom exception message that intent to notify user.
-  late String message;
+  final String message;
+
+  /// Have a constructor
+  RohdException(this.message);
 
   @override
   String toString() => message;

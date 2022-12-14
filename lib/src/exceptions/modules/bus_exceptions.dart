@@ -20,11 +20,10 @@ class InvalidStartEndIndexException extends RohdException {
   /// Creates a [InvalidStartEndIndexException] with an
   /// optional error [message].
   InvalidStartEndIndexException(
-      {required int startIndex, required int endIndex, String? message}) {
-    super.message = message ??
-        'Start ($startIndex) and End ($endIndex) must '
-            'be greater than or equal to 0.';
-  }
+      {required int startIndex, required int endIndex, String? message})
+      : super(message ??
+            'Start ($startIndex) and End ($endIndex) must '
+                'be greater than or equal to 0.');
 }
 
 /// An exception that thrown when bus index is out of bound.
@@ -38,11 +37,10 @@ class InvalidOutOfBoundIndexException extends RohdException {
       {required int startIndex,
       required int endIndex,
       required int width,
-      String? message}) {
-    super.message = message ??
-        'Index out of bounds, indices $startIndex and $endIndex must be less'
-            ' than $width';
-  }
+      String? message})
+      : super(message ??
+            'Index out of bounds, indices $startIndex and $endIndex must be less'
+                ' than $width');
 }
 
 /// An exception that thrown when custom verilog inputs
@@ -54,9 +52,8 @@ class InvalidMultipleInputException extends RohdException {
   /// Creates a [InvalidMultipleInputException] with an
   /// optional error [message].
   InvalidMultipleInputException(
-      {required Map<String, String> inputs, String? message}) {
-    super.message = message ?? 'Object has exactly one input, but saw $inputs.';
-  }
+      {required Map<String, String> inputs, String? message})
+      : super(message ?? 'Object has exactly one input, but saw $inputs.');
 }
 
 /// An exception that thrown when swizzle input length
@@ -69,9 +66,8 @@ class InvalidLengthException extends RohdException {
   InvalidLengthException(
       {required List<Logic> swizzleInputs,
       required Map<String, String> inputs,
-      String? message}) {
-    super.message = message ??
-        'This swizzle has ${swizzleInputs.length} inputs,'
-            ' but saw $inputs with ${inputs.length} values.';
-  }
+      String? message})
+      : super(message ??
+            'This swizzle has ${swizzleInputs.length} inputs,'
+                ' but saw $inputs with ${inputs.length} values.');
 }
