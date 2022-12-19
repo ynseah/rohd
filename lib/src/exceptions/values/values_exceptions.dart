@@ -35,9 +35,7 @@ class InvalidLogicException extends RohdException {
   ///
   /// Creates a [InvalidLogicException] with an optional error [message].
   InvalidLogicException(
-      {required String modName,
-      required LogicValue logicValue,
-      String? message})
+      {required String modName, required String logicValue, String? message})
       : super(message ??
             'Cannot convert invalid LogicValue to $modName: $logicValue');
 }
@@ -58,6 +56,31 @@ class InvalidTypeException extends RohdException {
   /// Display error [message] when [valRuntimeType] is invalid.
   ///
   /// Creates a [InvalidTypeException] with an optional error [message].
-  InvalidTypeException(Type valRuntimeType)
-      : super('Cannot handle type $valRuntimeType here.');
+  InvalidTypeException(Type valRuntimeType, [String? message])
+      : super(message ?? 'Cannot handle type $valRuntimeType here.');
+}
+
+/// An exception that thrown when there is an unhandled scenario.
+class UnhandledScenarioException extends RohdException {
+  /// Display error [message] when there is an unhandled scenario.
+  ///
+  /// Creates a [UnhandledScenarioException] with an optional error [message].
+  UnhandledScenarioException([String? message])
+      : super(message ?? 'Unhandled scenario.');
+}
+
+/// An exception that thrown when comparison between runtimetype of
+/// `LogicValue` is unknown.
+class UnknownComparisonException extends RohdException {
+  /// Display error [message] when comparison between 2 runtimetypes,
+  /// [runtimeTypeLeft] and [runtimeTypeRight] is unknwon.
+  ///
+  /// Creates a [UnknownComparisonException] with an optional error [message].
+  UnknownComparisonException(
+      {required String runtimeTypeLeft,
+      required String runtimeTypeRight,
+      String? message})
+      : super(message ??
+            'Unexpected unknown comparison between $runtimeTypeLeft'
+                ' and $runtimeTypeRight.');
 }

@@ -123,7 +123,7 @@ class _BigLogicValue extends LogicValue {
     if (_invalid.sign != 0) {
       throw InvalidLogicException(
         modName: 'BigInt',
-        logicValue: this,
+        logicValue: _value.toString(),
       );
     }
     return _value;

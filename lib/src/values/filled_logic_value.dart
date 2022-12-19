@@ -56,8 +56,9 @@ class _FilledLogicValue extends LogicValue {
         return other._value == other._mask && other._invalid == other._mask;
       }
     }
-    throw Exception('Unexpected unknown comparison between $runtimeType'
-        ' and ${other.runtimeType}.');
+    throw UnknownComparisonException(
+        runtimeTypeLeft: runtimeType.toString(),
+        runtimeTypeRight: other.runtimeType.toString());
   }
 
   @override
@@ -87,7 +88,8 @@ class _FilledLogicValue extends LogicValue {
     } else if (_value == _LogicValueEnum.zero) {
       return BigInt.zero;
     }
-    throw Exception('Cannot convert invalid value "$_value" to BigInt.');
+    throw InvalidLogicException(
+        modName: 'BigInt', logicValue: _value.toString());
   }
 
   @override
@@ -100,7 +102,7 @@ class _FilledLogicValue extends LogicValue {
     } else if (_value == _LogicValueEnum.zero) {
       return 0;
     }
-    throw Exception('Cannot convert invalid value "$_value" to an int.');
+    throw InvalidLogicException(modName: 'int', logicValue: _value.toString());
   }
 
   @override
@@ -195,7 +197,7 @@ class _FilledLogicValue extends LogicValue {
       return LogicValue._bigLogicValueOrFilled(
           other._value & ~other._invalid, other._invalid, width);
     }
-    throw Exception('Unhandled scenario.');
+    throw UnhandledScenarioException();
   }
 
   @override
@@ -225,7 +227,7 @@ class _FilledLogicValue extends LogicValue {
       return LogicValue._bigLogicValueOrFilled(
           other._value & ~other._invalid, other._invalid, width);
     }
-    throw Exception('Unhandled scenario.');
+    throw UnhandledScenarioException();
   }
 
   @override
@@ -261,7 +263,7 @@ class _FilledLogicValue extends LogicValue {
             width);
       }
     }
-    throw Exception('Unhandled scenario.');
+    throw UnhandledScenarioException();
   }
 
   @override
