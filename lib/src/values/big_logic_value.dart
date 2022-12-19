@@ -18,7 +18,8 @@ extension BigLogicValueBigIntUtilities on BigInt {
   /// Always interprets the number as unsigned, and thus never clamps to fit.
   int toIntUnsigned(int width) {
     if (width > LogicValue._INT_BITS) {
-      throw LargeWidthException(width, LogicValue._INT_BITS);
+      throw LargeWidthException(
+          modName: 'BigInt', width: width, intBit: LogicValue._INT_BITS);
     } else if (width == LogicValue._INT_BITS) {
       // When width is 64, `BigInt.toInt()` will clamp values assuming that
       // it's a signed number.  To avoid that, if the width is 64, then do the

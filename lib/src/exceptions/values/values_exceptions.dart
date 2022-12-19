@@ -11,16 +11,25 @@
 import 'package:rohd/rohd.dart';
 import 'package:rohd/src/exceptions/rohd_exception.dart';
 
-///
+/// An exception that thrown when  `width` is greater than `intBit`
+/// during values conversion.
 class LargeWidthException extends RohdException {
+  /// Display error [message] when [width] is greater than [intBit]
+  /// in [modName].
   ///
-  LargeWidthException(int width, int intBit, [String? message])
+  /// Creates a [LargeWidthException] with an optional error [message].
+  LargeWidthException(
+      {required String modName,
+      required int width,
+      required int intBit,
+      String? message})
       : super(message ??
-            'Cannot convert to BigInt when width $width'
+            'Cannot convert to $modName when width $width'
                 ' is greater than $intBit');
 }
 
-///
+/// An exception that thrown when  `width` is greater than `intBit`
+/// during values conversion.
 class InvalidLogicException extends RohdException {
   ///
   InvalidLogicException(dynamic logicValue, [String? message])

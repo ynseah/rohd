@@ -4,3 +4,4 @@
 export './conditionals/conditional_exceptions.dart';
 export './name/name_exceptions.dart';
 export './sim_compare/sim_compare_exceptions.dart';
+export './values/values_exceptions.dart';
