@@ -101,8 +101,7 @@ abstract class LogicValue {
 
   _LogicValueEnum get _enum {
     if (width != 1) {
-      throw Exception(
-          'Cannot convert value of width $width to a single bit value.');
+      SingleBitConvertionException(width: width);
     }
     return this == LogicValue.one
         ? _LogicValueEnum.one
@@ -416,8 +415,7 @@ abstract class LogicValue {
 
   String _bitString() {
     if (width != 1) {
-      throw Exception(
-          'Cannot convert value of width $width to a single bit value.');
+      throw SingleBitConvertionException(width: width);
     }
     return this == LogicValue.x
         ? 'x'

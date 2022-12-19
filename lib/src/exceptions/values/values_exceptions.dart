@@ -8,7 +8,6 @@
 /// Author: Yao Jing Quek <yao.jing.quek@intel.com>
 ///
 
-import 'package:rohd/rohd.dart';
 import 'package:rohd/src/exceptions/rohd_exception.dart';
 
 /// An exception that thrown when  `width` is greater than `intBit`
@@ -83,4 +82,16 @@ class UnknownComparisonException extends RohdException {
       : super(message ??
             'Unexpected unknown comparison between $runtimeTypeLeft'
                 ' and $runtimeTypeRight.');
+}
+
+/// An exception that thrown when cannot convert `width` to
+/// single bit value.
+class SingleBitConvertionException extends RohdException {
+  /// Display error [message] when conversion of [width] to single bit
+  /// value fail.
+  ///
+  /// Creates a [SingleBitConvertionException] with an optional error [message].
+  SingleBitConvertionException({required int width, String? message})
+      : super(message ??
+            'Cannot convert value of width $width to a single bit value.');
 }
