@@ -121,15 +121,16 @@ class _BigLogicValue extends LogicValue {
   @override
   BigInt toBigInt() {
     if (_invalid.sign != 0) {
-      // TODO(Max): The datatype of `this` is _BigLogicValue which is private,
-      // Can I put it as dynamic.
-      throw InvalidLogicException(this);
+      throw InvalidLogicException(
+        modName: 'BigInt',
+        logicValue: this,
+      );
     }
     return _value;
   }
 
   @override
-  int toInt() => throw LongWidthException(width);
+  int toInt() => throw LongWidthIntException(width);
 
   @override
   LogicValue operator ~() => LogicValue._bigLogicValueOrFilled(
@@ -138,7 +139,7 @@ class _BigLogicValue extends LogicValue {
   @override
   LogicValue _and2(LogicValue other) {
     if (other is! _BigLogicValue) {
-      throw InvalidTypeException(other);
+      throw InvalidTypeException(other.runtimeType);
     }
     final eitherInvalid = _invalid | other._invalid;
     final eitherZero =
@@ -150,7 +151,7 @@ class _BigLogicValue extends LogicValue {
   @override
   LogicValue _or2(LogicValue other) {
     if (other is! _BigLogicValue) {
-      throw InvalidTypeException(other);
+      throw InvalidTypeException(other.runtimeType);
     }
     final eitherInvalid = _invalid | other._invalid;
     final eitherOne = (_value & ~_invalid) | (other._value & ~other._invalid);
@@ -161,7 +162,7 @@ class _BigLogicValue extends LogicValue {
   @override
   LogicValue _xor2(LogicValue other) {
     if (other is! _BigLogicValue) {
-      throw InvalidTypeException(other);
+      throw InvalidTypeException(other.runtimeType);
     }
     final eitherInvalid = _invalid | other._invalid;
     return LogicValue._bigLogicValueOrFilled(

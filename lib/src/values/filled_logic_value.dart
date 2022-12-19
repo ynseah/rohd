@@ -93,8 +93,7 @@ class _FilledLogicValue extends LogicValue {
   @override
   int toInt() {
     if (width > LogicValue._INT_BITS) {
-      throw Exception('LogicValue width $width is too long to convert to int.'
-          ' Use toBigInt() instead.');
+      throw LongWidthIntException(width);
     }
     if (_value == _LogicValueEnum.one) {
       return _SmallLogicValue._maskOfWidth(width);

@@ -28,27 +28,36 @@ class LargeWidthException extends RohdException {
                 ' is greater than $intBit');
 }
 
-/// An exception that thrown when  `width` is greater than `intBit`
-/// during values conversion.
+/// An exception that thrown when attempt to convert invalid logic value.
 class InvalidLogicException extends RohdException {
+  /// Display error [message] when [logicValue] that attempt to convert
+  /// to [modName] is invalid.
   ///
-  InvalidLogicException(dynamic logicValue, [String? message])
+  /// Creates a [InvalidLogicException] with an optional error [message].
+  InvalidLogicException(
+      {required String modName,
+      required LogicValue logicValue,
+      String? message})
       : super(message ??
-            'Cannot convert invalid LogicValue to BigInt: $logicValue');
+            'Cannot convert invalid LogicValue to $modName: $logicValue');
 }
 
-///
-class LongWidthException extends RohdException {
+/// An exception that thrown when attempt to convert long `width` to `int`.
+class LongWidthIntException extends RohdException {
+  /// Display error [message] when [width] to convert to int is too Long.
   ///
-  LongWidthException(int width, [String? message])
+  /// Creates a [LongWidthIntException] with an optional error [message].
+  LongWidthIntException(int width, [String? message])
       : super(message ??
             'LogicValue width $width is too long to convert to int.'
                 ' Use toBigInt() instead.');
 }
 
-///
+/// An exception that thrown when `LogicValue` type is invalid.
 class InvalidTypeException extends RohdException {
+  /// Display error [message] when [valRuntimeType] is invalid.
   ///
-  InvalidTypeException(LogicValue other)
-      : super('Cannot handle type ${other.runtimeType} here.');
+  /// Creates a [InvalidTypeException] with an optional error [message].
+  InvalidTypeException(Type valRuntimeType)
+      : super('Cannot handle type $valRuntimeType here.');
 }

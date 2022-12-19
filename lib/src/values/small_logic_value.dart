@@ -120,7 +120,7 @@ class _SmallLogicValue extends LogicValue {
   @override
   LogicValue _and2(LogicValue other) {
     if (other is! _SmallLogicValue) {
-      throw Exception('Cannot handle type ${other.runtimeType} here.');
+      throw InvalidTypeException(other.runtimeType);
     }
     final eitherInvalid = _invalid | other._invalid;
     final eitherZero =
@@ -132,7 +132,7 @@ class _SmallLogicValue extends LogicValue {
   @override
   LogicValue _or2(LogicValue other) {
     if (other is! _SmallLogicValue) {
-      throw Exception('Cannot handle type ${other.runtimeType} here.');
+      throw InvalidTypeException(other.runtimeType);
     }
     final eitherInvalid = _invalid | other._invalid;
     final eitherOne = (_value & ~_invalid) | (other._value & ~other._invalid);
@@ -143,7 +143,7 @@ class _SmallLogicValue extends LogicValue {
   @override
   LogicValue _xor2(LogicValue other) {
     if (other is! _SmallLogicValue) {
-      throw Exception('Cannot handle type ${other.runtimeType} here.');
+      throw InvalidTypeException(other.runtimeType);
     }
     final eitherInvalid = _invalid | other._invalid;
     return LogicValue._smallLogicValueOrFilled(
