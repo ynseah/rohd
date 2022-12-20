@@ -544,7 +544,7 @@ abstract class LogicValue {
   // ignore: avoid_returning_this
   LogicValue get bit {
     if (width != 1) {
-      throw Exception('Width must be 1, but was $width.');
+      throw SingleWidthException(width: width);
     }
     return this;
   }
@@ -565,11 +565,13 @@ abstract class LogicValue {
   /// Throws an exception if the value is invalid.
   bool toBool() {
     if (!isValid) {
-      throw Exception('Cannot convert value "$this" to bool');
+      throw BooleanConversionException(value: this);
     }
     if (width != 1) {
-      throw Exception('Only single bit values can be converted to a bool,'
-          ' but found width $width in $this');
+      throw SingleWidthException(
+          width: width,
+          message: 'Only single bit values can be converted to a bool,'
+              ' but found width $width in $this');
     }
     return this == LogicValue.one;
   }
@@ -603,7 +605,7 @@ abstract class LogicValue {
   LogicValue _twoInputBitwiseOp(
       LogicValue other, LogicValue Function(LogicValue, LogicValue) op) {
     if (width != other.width) {
-      throw Exception('Widths must match, but found $this and $other');
+      throw MismatchWidthException(widthA: this, widthB: other);
     }
     if (other is _FilledLogicValue && this is! _FilledLogicValue) {
       return op(other, this);

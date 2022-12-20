@@ -8,6 +8,7 @@
 /// Author: Yao Jing Quek <yao.jing.quek@intel.com>
 ///
 
+import 'package:rohd/rohd.dart';
 import 'package:rohd/src/exceptions/rohd_exception.dart';
 
 /// An exception that thrown when  `width` is greater than `intBit`
@@ -94,4 +95,32 @@ class SingleBitConvertionException extends RohdException {
   SingleBitConvertionException({required int width, String? message})
       : super(message ??
             'Cannot convert value of width $width to a single bit value.');
+}
+
+/// An exception that thrown when width is not equal to one.
+class SingleWidthException extends RohdException {
+  /// Display error [message] when [width] is not equal to 1.
+  ///
+  /// Creates a [SingleWidthException] with an optional error [message].
+  SingleWidthException({required int width, String? message})
+      : super(message ?? 'Width must be 1, but was $width.');
+}
+
+/// An exception that thrown when conversion to boolean is fail.
+class BooleanConversionException extends RohdException {
+  /// Display error [message] when conversion of [value] to boolean is fail.
+  ///
+  /// Creates a [BooleanConversionException] with an optional error [message].
+  BooleanConversionException({required LogicValue value, String? message})
+      : super(message ?? 'Cannot convert value "$value" to bool.');
+}
+
+/// An exception that thrown when `width` is not equal.
+class MismatchWidthException extends RohdException {
+  /// Display error [message] when [widthA] and [widthB] is mismatch.
+  ///
+  /// Creates a [MismatchWidthException] with an optional error [message].
+  MismatchWidthException(
+      {required LogicValue widthA, required LogicValue widthB, String? message})
+      : super(message ?? 'Widths must match, but found $widthA and $widthB');
 }
