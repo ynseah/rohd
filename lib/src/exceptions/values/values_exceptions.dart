@@ -98,6 +98,19 @@ class SingleBitConvertionException extends RohdException {
 }
 
 /// An exception that thrown when width is not equal to one.
+class OutputWidthException extends RohdException {
+  /// Display error [message] when [newWidth] is not greater or
+  /// equal to [prevWidth].
+  ///
+  /// Creates a [OutputWidthException] with an optional error [message].
+  OutputWidthException(
+      {required int newWidth, required int prevWidth, String? message})
+      : super(message ??
+            'New width $newWidth must be '
+                'greater than or equal to width $prevWidth.');
+}
+
+/// An exception that thrown when width is not equal to one.
 class SingleWidthException extends RohdException {
   /// Display error [message] when [width] is not equal to 1.
   ///
@@ -123,4 +136,55 @@ class MismatchWidthException extends RohdException {
   MismatchWidthException(
       {required LogicValue widthA, required LogicValue widthB, String? message})
       : super(message ?? 'Widths must match, but found $widthA and $widthB');
+}
+
+/// An exception that thrown when arguments runtimeType is invalid.
+class InvalidArgumentsException extends RohdException {
+  /// Display error [message] when [type] is invalid.
+  ///
+  /// Creates a [InvalidArgumentsException] with an optional error [message].
+  InvalidArgumentsException({required String type, String? message})
+      : super(message ??
+            'Improper arguments $type,'
+                ' should be int, LogicValue, or BigInt.');
+}
+
+/// An exception that is thrown when big type is unexpected.
+class InvalidBigTypeException extends RohdException {
+  /// Display error [message] when Big [type] is unexpected.
+  ///
+  /// Creates a [InvalidBigTypeException] with an optional error [message].
+  InvalidBigTypeException({required String type, String? message})
+      : super(message ?? 'Unexpected big type: $type');
+}
+
+/// An exception that is thrown when edge detection value is invalid.
+class EdgeDetectionException extends RohdException {
+  /// Display error [message] when invalid value is found
+  /// from [prevValue] to [newValue]
+  ///
+  /// Creates a [EdgeDetectionException] with an optional error [message].
+  EdgeDetectionException(
+      {required LogicValue prevValue,
+      required LogicValue newValue,
+      String? message})
+      : super(message ??
+            'Edge detection on invalid value from $prevValue to $newValue.');
+}
+
+/// An exception that is thrown when edge detection value is invalid.
+class RangeException extends RohdException {
+  /// Display error [message] on range related exception.
+  ///
+  /// Creates a [RangeException] with an error [message].
+  RangeException(super.message);
+}
+
+/// An exception that is thrown when type to shift is invalid.
+class InvalidShiftException extends RohdException {
+  /// Display error [message] on invalid shift type.
+  ///
+  /// Creates a [InvalidShiftException] with an optional error [message].
+  InvalidShiftException({required String type, String? message})
+      : super(message ?? 'Cannot shift by type $type');
 }

@@ -111,7 +111,7 @@ abstract class LogicValue {
                 ? _LogicValueEnum.x
                 : this == LogicValue.z
                     ? _LogicValueEnum.z
-                    : throw Exception('Failed to convert.');
+                    : throw UnhandledScenarioException('Failed to convert.');
   }
 
   /// Constructs a [LogicValue] from [it].
@@ -479,17 +479,17 @@ abstract class LogicValue {
         (startIndex < 0) ? width + startIndex : startIndex;
     final modifiedEndIndex = (endIndex < 0) ? width + endIndex : endIndex;
     if (modifiedEndIndex < modifiedStartIndex) {
-      throw Exception(
+      throw RangeException(
           'End $modifiedEndIndex(=$endIndex) cannot be less than start '
           '$modifiedStartIndex(=$startIndex).');
     }
     if (modifiedEndIndex > width) {
-      throw Exception(
+      throw RangeException(
           'End $modifiedEndIndex(=$endIndex) must be less than width'
           ' ($width).');
     }
     if (modifiedStartIndex < 0) {
-      throw Exception(
+      throw RangeException(
           'Start $modifiedStartIndex(=$startIndex) must be greater than or '
           'equal to 0.');
     }
@@ -667,11 +667,10 @@ abstract class LogicValue {
   /// different types of representation.
   LogicValue _doMath(dynamic other, dynamic Function(dynamic a, dynamic b) op) {
     if (!(other is int || other is LogicValue || other is BigInt)) {
-      throw Exception('Improper argument ${other.runtimeType}, should be int,'
-          ' LogicValue, or BigInt.');
+      throw InvalidArgumentsException(type: other.runtimeType.toString());
     }
     if (other is LogicValue && other.width != width) {
-      throw Exception('Widths  must match, but found "$this" and "$other".');
+      throw MismatchWidthException(widthA: this, widthB: other);
     }
 
     if (!isValid) {
@@ -689,8 +688,8 @@ abstract class LogicValue {
               ? BigInt.from(other)
               : other is LogicValue
                   ? other.toBigInt()
-                  : throw Exception(
-                      'Unexpected big type: ${other.runtimeType}.');
+                  : throw InvalidBigTypeException(
+                      type: other.runtimeType.toString());
       return LogicValue.ofBigInt(op(a, b) as BigInt, width);
     } else {
       final a = toInt();
@@ -741,11 +740,10 @@ abstract class LogicValue {
   /// different types of representation.
   LogicValue _doCompare(dynamic other, bool Function(dynamic a, dynamic b) op) {
     if (!(other is int || other is LogicValue || other is BigInt)) {
-      throw Exception('Improper arguments ${other.runtimeType},'
-          ' should be int, LogicValue, or BigInt.');
+      throw InvalidArgumentsException(type: other.runtimeType.toString());
     }
     if (other is LogicValue && other.width != width) {
-      throw Exception('Widths must match, but found "$this" and "$other"');
+      throw MismatchWidthException(widthA: this, widthB: other);
     }
 
     if (!isValid) {
@@ -765,8 +763,8 @@ abstract class LogicValue {
               ? BigInt.from(other)
               : other is LogicValue
                   ? other.toBigInt()
-                  : throw Exception(
-                      'Unexpected big type: ${other.runtimeType}.');
+                  : throw InvalidBigTypeException(
+                      type: other.runtimeType.toString());
     } else {
       a = toInt();
       b = other is int ? other : (other as LogicValue).toInt();
@@ -798,7 +796,7 @@ abstract class LogicValue {
     } else if (shamt is int) {
       shamtInt = shamt;
     } else {
-      throw Exception('Cannot shift by type ${shamt.runtimeType}.');
+      throw InvalidShiftException(type: shamt.runtimeType.toString());
     }
     if (direction == _ShiftType.left) {
       return _shiftLeft(shamtInt);
@@ -821,7 +819,9 @@ abstract class LogicValue {
 
   static void _assertSingleBit(LogicValue value) {
     if (value.width != 1) {
-      throw Exception('Expected a single-bit value but found $value.');
+      throw SingleWidthException(
+          width: value.toInt(),
+          message: 'Expected a single-bit value but found $value.');
     }
   }
 
@@ -836,8 +836,8 @@ abstract class LogicValue {
     _assertSingleBit(newValue);
 
     if (!ignoreInvalid && (!previousValue.isValid | !newValue.isValid)) {
-      throw Exception(
-          'Edge detection on invalid value from $previousValue to $newValue.');
+      throw EdgeDetectionException(
+          prevValue: previousValue, newValue: newValue);
     }
     return previousValue == LogicValue.zero && newValue == LogicValue.one;
   }
@@ -853,8 +853,8 @@ abstract class LogicValue {
     _assertSingleBit(newValue);
 
     if (!ignoreInvalid && (!previousValue.isValid | !newValue.isValid)) {
-      throw Exception(
-          'Edge detection on invalid value from $previousValue to $newValue');
+      throw EdgeDetectionException(
+          prevValue: previousValue, newValue: newValue);
     }
     return previousValue == LogicValue.one && newValue == LogicValue.zero;
   }
@@ -867,11 +867,12 @@ abstract class LogicValue {
   /// exception will be thrown. [fill] must be a single bit ([width]=1).
   LogicValue extend(int newWidth, LogicValue fill) {
     if (newWidth < width) {
-      throw Exception(
-          'New width $newWidth must be greater than or equal to width $width.');
+      throw OutputWidthException(newWidth: newWidth, prevWidth: width);
     }
     if (fill.width != 1) {
-      throw Exception('The fill must be 1 bit, but got $fill.');
+      throw SingleWidthException(
+          width: fill.toInt(),
+          message: 'The fill must be 1 bit, but got $fill.');
     }
     return [
       LogicValue.filled(newWidth - width, fill),
@@ -903,7 +904,7 @@ abstract class LogicValue {
   /// the position of the [update] would cause an overrun past the [width].
   LogicValue withSet(int startIndex, LogicValue update) {
     if (startIndex + update.width > width) {
-      throw Exception(
+      throw RangeException(
           'Width of updatedValue $update at startIndex $startIndex would'
           ' overrun the width of the original ($width).');
     }
