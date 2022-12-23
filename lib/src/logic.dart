@@ -16,6 +16,8 @@ import 'package:meta/meta.dart';
 import 'package:rohd/rohd.dart';
 import 'package:rohd/src/utilities/sanitizer.dart';
 import 'package:rohd/src/utilities/synchronous_propagator.dart';
+import 'package:rohd/src/exceptions/logic/logic_exception.dart';
+import 'package:rohd/src/exceptions/values/values_exceptions.dart';
 
 /// Represents the event of a [Logic] changing value.
 class LogicValueChanged {
@@ -149,8 +151,7 @@ class _Wire {
   /// Throws an exception if [width] is not `1`.
   Stream<LogicValueChanged> get negedge {
     if (width != 1) {
-      throw Exception(
-          'Can only detect negedge when width is 1, but was $width');
+      throw EdgeWidthException(edge: 'negedge', width: width);
     }
 
     _negedge ??= changed.where((args) => LogicValue.isNegedge(
@@ -169,8 +170,7 @@ class _Wire {
   /// Throws an exception if [width] is not `1`.
   Stream<LogicValueChanged> get posedge {
     if (width != 1) {
-      throw Exception(
-          'Can only detect posedge when width is 1, but was $width');
+      throw EdgeWidthException(edge: 'posedge', width: width);
     }
 
     _posedge ??= changed.where((args) => LogicValue.isPosedge(
@@ -228,7 +228,7 @@ class _Wire {
                 ? LogicValue.zero
                 : val == 1
                     ? LogicValue.one
-                    : throw Exception('Only can fill 0 or 1, but saw $val.'));
+                    : throw InvalidValueException(val: val.toString()));
       } else {
         newValue = LogicValue.ofInt(val, width);
       }
@@ -240,7 +240,7 @@ class _Wire {
                 ? LogicValue.zero
                 : val == BigInt.one
                     ? LogicValue.one
-                    : throw Exception('Only can fill 0 or 1, but saw $val.'));
+                    : throw InvalidValueException(val: val.toString()));
       } else {
         newValue = LogicValue.ofBigInt(val, width);
       }
@@ -251,18 +251,19 @@ class _Wire {
           (val == LogicValue.x || val == LogicValue.z || fill)) {
         newValue = LogicValue.filled(width, val);
       } else if (fill) {
-        throw Exception(
+        throw InvalidPutOperationException(
             'Failed to fill value with $val.  To fill, it should be 1 bit.');
       } else {
         newValue = val;
       }
     } else {
-      throw Exception('Unrecognized value "$val" to deposit on this signal. '
+      throw InvalidPutOperationException(
+          'Unrecognized value "$val" to deposit on this signal. '
           'Unknown type ${val.runtimeType} cannot be deposited.');
     }
 
     if (newValue.width != width) {
-      throw Exception(
+      throw InvalidPutOperationException(
           'Updated value width mismatch.  The width of $val should be $width.');
     }
 
@@ -429,7 +430,7 @@ class Logic {
       : name = name == null ? 's${_signalIdx++}' : Sanitizer.sanitizeSV(name),
         _wire = _Wire(width: width) {
     if (width < 0) {
-      throw Exception('Logic width must be greater than or equal to 0.');
+      throw LogicWidthZeroException();
     }
   }
 
@@ -439,12 +440,13 @@ class Logic {
   /// Throws an exception if this [Logic] cannot be connected to another signal.
   void _assertConnectable(Logic other) {
     if (_srcConnection != null) {
-      throw Exception(
+      throw LogicSignalConnException(
           'This signal "$this" is already connected to "$srcConnection",'
           ' so it cannot be connected to "$other".');
     }
     if (_unassignable) {
-      throw Exception('This signal "$this" has been marked as unassignable.  '
+      throw LogicSignalConnException(
+          'This signal "$this" has been marked as unassignable.  '
           'It may be a constant expression or otherwise should'
           ' not be assigned.');
     }
@@ -583,9 +585,7 @@ class Logic {
   /// [Conditional].
   ConditionalAssign operator <(dynamic other) {
     if (_unassignable) {
-      throw Exception('This signal "$this" has been marked as unassignable.  '
-          'It may be a constant expression or otherwise'
-          ' should not be assigned.');
+      throw UnassignableException(signal: toString());
     }
 
     if (other is Logic) {
@@ -627,7 +627,7 @@ class Logic {
     } else if (index is int) {
       return slice(index, index);
     }
-    throw Exception('Expected `int` or `Logic`');
+    throw InvalidTypeException(index.runtimeType);
   }
 
   /// Accesses a subset of this signal from [startIndex] to [endIndex],
@@ -689,7 +689,7 @@ class Logic {
         (startIndex < 0) ? width + startIndex : startIndex;
     final modifiedEndIndex = (endIndex < 0) ? width + endIndex : endIndex;
     if (modifiedEndIndex < modifiedStartIndex) {
-      throw Exception(
+      throw RangeException(
           'End $modifiedEndIndex(=$endIndex) cannot be less than start'
           ' $modifiedStartIndex(=$startIndex).');
     }
@@ -703,8 +703,7 @@ class Logic {
   /// exception will be thrown.
   Logic zeroExtend(int newWidth) {
     if (newWidth < width) {
-      throw Exception(
-          'New width $newWidth must be greater than or equal to width $width.');
+      throw OutputWidthException(newWidth: newWidth, prevWidth: width);
     }
     return [
       Const(0, width: newWidth - width),
@@ -731,8 +730,10 @@ class Logic {
       return this;
     }
 
-    throw Exception(
-        'New width $newWidth must be greater than or equal to width $width.');
+    throw OutputWidthException(
+      newWidth: newWidth,
+      prevWidth: width,
+    );
   }
 
   /// Returns a copy of this [Logic] with the bits starting from [startIndex]
@@ -743,9 +744,10 @@ class Logic {
   /// if the position of the [update] would cause an overrun past the [width].
   Logic withSet(int startIndex, Logic update) {
     if (startIndex + update.width > width) {
-      throw Exception(
-          'Width of updatedValue $update at startIndex $startIndex would'
-          ' overrun the width of the original ($width).');
+      throw WithSetException(
+          update: update.toString(),
+          startIndex: startIndex.toString(),
+          width: width.toString());
     }
 
     return [
