@@ -1,4 +1,5 @@
 import 'package:rohd/rohd.dart';
+import 'package:test/test.dart';
 
 FullAdderResult fullAdder(Logic a, Logic b, Logic carryIn) {
   final and1 = carryIn & (a ^ b);
@@ -40,8 +41,11 @@ void main() {
 
   final sum = nBitAdder(a, b);
 
-  a.put(5);
-  b.put(6);
+  test('should return 10 when both A, B equal to 5.', () async {
+    a.put(5);
+    b.put(5);
+    print(sum.value.toString(includeWidth: false));
 
-  print(sum.value.toInt());
+    expect(sum.value.toInt(), equals(10));
+  });
 }
