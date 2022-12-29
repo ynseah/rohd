@@ -48,6 +48,11 @@ class NBitAdder extends Module {
   Logic b;
 
   NBitAdder(this.a, this.b) {
+    // Declare Input Node
+    a = addInput('a', a, width: a.width);
+    b = addInput('b', b, width: b.width);
+    carry = addInput('carry_in', carry, width: carry.width);
+
     final n = a.width;
     FullAdder? res;
 
@@ -71,7 +76,7 @@ void main() async {
   final b = Logic(name: 'b', width: 8);
   final nbitAdder = NBitAdder(a, b);
 
-  nbitAdder.build();
+  await nbitAdder.build();
 
   print(nbitAdder.generateSynth());
 
