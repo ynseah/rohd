@@ -1,6 +1,6 @@
 # Basic Module in ROHD
 
-## Explaination of why we need to use Module
+## Why we need to use ROHD Module
 
 Congratulation on making this far! 
 
