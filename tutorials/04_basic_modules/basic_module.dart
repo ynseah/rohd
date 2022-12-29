@@ -1,4 +1,5 @@
 import 'package:rohd/rohd.dart';
+import 'package:test/test.dart';
 
 class FullAdderResult {
   final sum = Logic(name: 'sum');
@@ -78,10 +79,12 @@ void main() async {
 
   await nbitAdder.build();
 
-  print(nbitAdder.generateSynth());
+  // print(nbitAdder.generateSynth());
 
-  a.put(15);
-  b.put(5);
+  test('should return 20 when A and B perform add.', () async {
+    a.put(15);
+    b.put(5);
 
-  print(nbitAdder.sumRes.toInt());
+    expect(nbitAdder.sumRes.toInt(), equals(20));
+  });
 }

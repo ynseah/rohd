@@ -8,7 +8,7 @@ class SimpleModule extends Module {
 
   SimpleModule(Logic in1) {
     // register input port
-    input1 = addInput(name, in1);
+    input1 = addInput('input_1', in1);
 
     // register output port
     output1 = addOutput('out');
@@ -31,6 +31,11 @@ void main() async {
   final simModule = SimpleModule(input);
   await simModule.build();
 
-  test('should return input value',
+  test('should return input value.',
       () => expect(simModule.signals.first.value.toInt(), equals(1)));
+
+  test(
+      'should generate system verilog code.',
+      () =>
+          expect(simModule.generateSynth(), contains('module SimpleModule(')));
 }
