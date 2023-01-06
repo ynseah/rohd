@@ -53,6 +53,8 @@
   <p>A waveform dumper for simulations.</p>
 <p>Outputs to vcd format at <a href="../rohd/WaveDumper/outputPath.html">outputPath</a>.  <a href="../rohd/WaveDumper/module.html">module</a> must be built prior to
 attaching the <a href="../rohd/WaveDumper-class.html">WaveDumper</a>.</p>
+<p>The waves will only dump to the file periodically and then once the
+simulation has completed.</p>
 </section>
 
 
@@ -267,6 +269,7 @@ attaching the <a href="../rohd/WaveDumper-class.html">WaveDumper</a>.</p>
 
   <li class="section-title"><a href="../rohd/rohd-library.html#mixins">Mixins</a></li>
   <li><a href="../rohd/CustomSystemVerilog-mixin.html">CustomSystemVerilog</a></li>
+  <li><a href="../rohd/FullyCombinational-mixin.html">FullyCombinational</a></li>
   <li><a href="../rohd/InlineSystemVerilog-mixin.html">InlineSystemVerilog</a></li>
 
 
