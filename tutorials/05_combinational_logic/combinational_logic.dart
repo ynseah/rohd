@@ -4,6 +4,7 @@ import 'package:rohd/rohd.dart';
 import 'package:test/test.dart';
 
 import 'if_block.dart';
+import 'case.dart';
 
 class FullAdderResult {
   final sum = Logic(name: 'sum');
@@ -30,7 +31,9 @@ class FullAdder extends Module {
     final sum = addOutput('sum');
 
     // Use Combinational block with If Else
-    Combinational([truthTableIf(a, b, carryIn, sum, carryOut)]);
+    // Combinational([truthTableIf(a, b, carryIn, sum, carryOut)]);
+
+    Combinational([truthTableCase(a, b, carryIn, sum, carryOut)]);
 
     fullAdderresult.sum <= output('sum');
     fullAdderresult.cOut <= output('carry_out');
