@@ -1,50 +1,43 @@
 import 'package:rohd/rohd.dart';
 
-class DFlipFlop extends Module {
-  DFlipFlop(Logic data, Logic reset, Logic clk) {
-    // declare input and output
-    data = addInput('d', data);
-    reset = addInput('reset', reset);
-    clk = addInput('clk', clk);
-
-    final q = addOutput('q');
-
-    Sequential(clk, [
-      If(reset, then: [q < 0], orElse: [q < data])
-    ]);
-  }
-
-  Logic get q => output('q');
-}
-
 class ShiftRegister extends Module {
-  ShiftRegister(Logic clk, Logic reset, Logic din) {
+  final int width;
+
+  ShiftRegister(Logic clk, Logic reset, Logic sin,
+      {this.width = 8, super.name = 'shift_register'}) {
+    // Input port
     clk = addInput('clk', clk);
     reset = addInput('reset', reset);
-    din = addInput('din', din);
+    sin = addInput('s_in', sin); // shift_in
 
-    final nBit = din.width;
+    // Output port
+    final sOut = addOutput('s_out', width: width); // need width. But why?
 
-    final dout = addOutput('shift_reg', width: nBit);
-    dout < 0;
+    // A local signal
+    var rReg = Logic(name: 'r_reg', width: width); // why need width?
+    var rNext = Logic(name: 'r_next', width: width);
 
     Sequential(clk, [
       IfBlock([
         Iff(reset, [
-          dout < 0,
+          rReg < 0,
         ]),
         Else([
-          dout < [dout.getRange(0, nBit - 1), din[nBit - 1]].swizzle(),
-        ])
+          rReg < rNext,
+        ]),
       ])
     ]);
+
+    // assign
+    rNext <= [sin, rReg.slice(width - 1, 1)].swizzle();
+    sOut <= rReg[0];
   }
 
-  Logic get outputRes => output('shift_reg');
+  Logic get outputRes => output('s_out');
 }
 
 void main() async {
-  final cin = Logic();
+  final cin = Logic(name: 'cin');
   final reset = Logic();
   final clk = SimpleClockGenerator(10).clk;
 
@@ -52,8 +45,11 @@ void main() async {
 
   await shiftReg.build();
 
+  // print system verilog code
+  print(shiftReg.generateSynth());
+
   reset.inject(1);
-  cin.inject(bin('1101'));
+  cin.inject(bin('1001'));
 
   WaveDumper(shiftReg);
 
