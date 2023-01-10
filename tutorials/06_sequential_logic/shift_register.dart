@@ -11,7 +11,7 @@ class ShiftRegister extends Module {
     sin = addInput('s_in', sin); // shift_in
 
     // Output port
-    final sOut = addOutput('s_out', width: width); // need width. But why?
+    final sOut = addOutput('s_out'); // need width. But why?
 
     // A local signal
     var rReg = Logic(name: 'r_reg', width: width); // why need width?
@@ -29,7 +29,7 @@ class ShiftRegister extends Module {
     ]);
 
     // assign
-    rNext <= [sin, rReg.slice(width - 1, 1)].swizzle();
+    rNext <= [sin, rReg.slice(width - 1, 1)].swizzle(); // right shift
     sOut <= rReg[0];
   }
 
