@@ -11,7 +11,7 @@ A lot of people is curious on why its necessary to overhaul so much legacy which
 Below, we will details and list the reason of why ROHD is so powerful as we view it as a standard.
 
 - **SystemVerilog is not good enough**
-When we talk about front-end hardware design or development, SystemVerilog(SV) is like first come into your mind. But, the things about SV is it is too limited for hardware description. Many people use tools for hardware generation and connectivity such as (XXXXXX) due to SystemVerilog's limitation.
+When we talk about front-end hardware design or development, SystemVerilog(SV) is like first come into your mind. But, the things about SV is it is too limited for hardware description. Many people use tools for hardware generation and connectivity such as (collage, chef, visa, defacto, ipxact, ziler) due to SystemVerilog's limitation.
 
 - **SystemVerilog is a poort language for testbenches**
 Some would disagrre, but we believe that testbenches are software. Nobody writes any software in SystemVerilog unless there are a verification engineer, because it's not a great option for software development. We use SV testbench because its convenient to interact with hardware and related tooling in the same language and toolstack.
