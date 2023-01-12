@@ -1,4 +1,4 @@
-# Setup & Installation
+# ROHD Setup & Installation
 
 There are two ways of development in ROHD. First, You can run ROHD on GitHub codespace or local machine. 
 
@@ -33,3 +33,44 @@ If you can see SystemVerilog code pop up on the terminal. Well, you have success
 6. To delete the codespace, go back to https://github.com/intel/rohd and click on codespace just like step 1. But this time, you will see more options. Click on the delete option to delete codespace.
 
 ![step 6](assets/CodespaceSetup/step6.PNG)
+
+
+## Local Development Setup
+
+Pre-requiresite:
+
+- Install latest `dart` SDK from official dart website: 
+
+https://dart.dev/get-dart
+
+- Install Visual Studio Code
+
+https://code.visualstudio.com/Download
+
+1. Clone the repository to the local directory. On your terminal, run 
+
+```cmd
+$ git clone https://github.com/intel/rohd.git
+```
+
+2. Open up your repository in VSCode using the command
+
+```cmd
+$ code rohd
+```
+
+You will see vscode automatically open up your ROHD folder. 
+
+![step 2](assets/localSetup/step2.PNG)
+
+3. Open up terminal in your VSCode by go to view -> terminal. Then, get the rohd package downloaded using the command below.
+
+```cmd
+$ dart pub get
+```
+
+4. Open up `example` folder on the left navigation panel and click on `example.dart` to bring forward the first example of ROHD. After that, navigate to the main function at below of line 58 and click on the `Run` at `Run | Debug`.
+
+![step 4](assets/localSetup/step4.PNG)
+
+If you can see SystemVerilog code pop up on the terminal. Congratulation, you now are ready to go with ROHD development.
