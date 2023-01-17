@@ -7,7 +7,7 @@ enum OvenStates { standby, cooking, paused, completed }
 class Button extends Const {
   Button._(int super.value) : super(width: 2);
   Button.start() : this._(bin('00'));
-  Button.stop() : this._(bin('01'));
+  Button.pause() : this._(bin('01'));
   Button.resume() : this._(bin('10'));
 }
 
@@ -32,21 +32,26 @@ class OvenModule extends Module {
     reset = addInput('reset', reset);
 
     // add time elapsed Counter
-    // final counterReset = addInput('counter_reset', Logic());
-    // final en = addInput('counter_en', Logic());
-    // final counter = Counter(Const(1), Const(0), clk, name: 'counter_module');
+    var counterReset = Logic(name: 'counter_reset');
+    var en = Logic(name: 'counter_en');
+    final counter = Counter(en, counterReset, clk, name: 'counter_module');
 
     final states = [
       State<OvenStates>(OvenStates.standby, events: {
         button.eq(Button.start()): OvenStates.cooking,
       }, actions: [
         led < LEDLight.blue().value,
+        counterReset < 1,
+        en < 0,
       ]),
+      // Cooking State (Need to count here)
       State<OvenStates>(OvenStates.cooking, events: {
-        button.eq(Button.stop()): OvenStates.paused,
-        // counter.val.eq(10): OvenStates.completed
+        button.eq(Button.pause()): OvenStates.paused,
+        counter.val.eq(2): OvenStates.completed
       }, actions: [
         led < LEDLight.yellow().value,
+        en < 1,
+        counterReset < 0,
       ]),
       State<OvenStates>(OvenStates.paused, events: {
         button.eq(Button.resume()): OvenStates.cooking
@@ -57,6 +62,8 @@ class OvenModule extends Module {
         button.eq(Button.start()): OvenStates.cooking
       }, actions: [
         led < LEDLight.green().value,
+        counterReset < 1,
+        en < 0,
       ])
     ];
 
@@ -81,8 +88,6 @@ void main() async {
   Simulator.registerAction(25, () => reset.put(0));
   Simulator.registerAction(25, () {
     button.put(bin('00'));
-    // oven.input('counter_reset').put(0);
-    // oven.input('counter_en').put(1);
   });
 
   WaveDumper(oven, outputPath: 'tutorials/08_fsm/oven.vcd');
