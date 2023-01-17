@@ -37,6 +37,7 @@ class OvenModule extends Module {
     final counter = Counter(en, counterReset, clk, name: 'counter_module');
 
     final states = [
+      // Standby State
       State<OvenStates>(OvenStates.standby, events: {
         button.eq(Button.start()): OvenStates.cooking,
       }, actions: [
@@ -44,20 +45,27 @@ class OvenModule extends Module {
         counterReset < 1,
         en < 0,
       ]),
+
       // Cooking State (Need to count here)
       State<OvenStates>(OvenStates.cooking, events: {
         button.eq(Button.pause()): OvenStates.paused,
-        counter.val.eq(2): OvenStates.completed
+        counter.val.eq(4): OvenStates.completed
       }, actions: [
         led < LEDLight.yellow().value,
         en < 1,
         counterReset < 0,
       ]),
+
+      // Pause State
       State<OvenStates>(OvenStates.paused, events: {
         button.eq(Button.resume()): OvenStates.cooking
       }, actions: [
         led < LEDLight.red().value,
+        counterReset < 0,
+        en < 0,
       ]),
+
+      // Completed State
       State<OvenStates>(OvenStates.completed, events: {
         button.eq(Button.start()): OvenStates.cooking
       }, actions: [
@@ -90,13 +98,23 @@ void main() async {
     button.put(bin('00'));
   });
 
+  // Pause at 55 seconds of clock
+  Simulator.registerAction(50, () {
+    button.put(bin('01'));
+  });
+
+  // Resume at 60 seconds of clock
+  Simulator.registerAction(70, () {
+    button.put(bin('10'));
+  });
+
   WaveDumper(oven, outputPath: 'tutorials/08_fsm/oven.vcd');
 
-  Simulator.registerAction(100, () {
+  Simulator.registerAction(120, () {
     print('Simulation End');
   });
 
-  Simulator.setMaxSimTime(100);
+  Simulator.setMaxSimTime(120);
 
   await Simulator.run();
 }
