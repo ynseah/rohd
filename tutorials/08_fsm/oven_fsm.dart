@@ -44,7 +44,7 @@ class OvenModule extends Module {
       ]),
       State<OvenStates>(OvenStates.cooking, events: {
         button.eq(Button.stop()): OvenStates.paused,
-        counter.val.eq(10): OvenStates.completed
+        // counter.val.eq(10): OvenStates.completed
       }, actions: [
         led < LEDLight.yellow().value,
       ]),
