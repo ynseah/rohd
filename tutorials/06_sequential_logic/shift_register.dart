@@ -1,20 +1,17 @@
 import 'package:rohd/rohd.dart';
 
 class ShiftRegister extends Module {
-  final int width;
-
   ShiftRegister(Logic clk, Logic reset, Logic sin,
-      {this.width = 8, super.name = 'shift_register'}) {
-    // Input port
+      {super.name = 'shift_register'}) {
     clk = addInput('clk', clk);
     reset = addInput('reset', reset);
-    sin = addInput('s_in', sin); // shift_in
+    sin = addInput('s_in', sin);
 
-    // Output port
-    final sOut = addOutput('s_out'); // need width. But why?
+    final sout = addOutput('s_out');
 
     // A local signal
-    var rReg = Logic(name: 'r_reg', width: width); // why need width?
+    final width = 4;
+    var rReg = Logic(name: 'r_reg', width: width);
     var rNext = Logic(name: 'r_next', width: width);
 
     Sequential(clk, [
@@ -25,35 +22,34 @@ class ShiftRegister extends Module {
         Else([
           rReg < rNext,
         ]),
-      ])
+      ]),
     ]);
 
-    // assign
     rNext <= [sin, rReg.slice(width - 1, 1)].swizzle(); // right shift
-    sOut <= rReg[0];
+    sout <= rReg[0];
   }
-
-  Logic get outputRes => output('s_out');
 }
 
 void main() async {
-  final cin = Logic(name: 'cin');
-  final reset = Logic();
+  final reset = Logic(name: 'reset');
+  final sin = Logic(name: 's_in');
   final clk = SimpleClockGenerator(10).clk;
 
-  final shiftReg = ShiftRegister(clk, reset, cin);
-
+  final shiftReg = ShiftRegister(clk, reset, sin);
   await shiftReg.build();
 
-  // print system verilog code
   print(shiftReg.generateSynth());
 
   reset.inject(1);
-  cin.inject(bin('1001'));
+  sin.inject(bin('101'));
 
-  WaveDumper(shiftReg);
-
-  Simulator.registerAction(25, () => reset.put(0));
+  Simulator.registerAction(25, () {
+    reset.put(0);
+    sin.inject(bin('101'));
+  });
+  Simulator.registerAction(35, () {
+    print(shiftReg.input('s_in').value.toString());
+  });
 
   // Print a message when we're done with the simulation!
   Simulator.registerAction(100, () {
@@ -62,6 +58,9 @@ void main() async {
 
   // Set a maximum time for the simulation so it doesn't keep running forever.
   Simulator.setMaxSimTime(100);
+
+  WaveDumper(shiftReg,
+      outputPath: 'tutorials/06_sequential_logic/shiftReg.vcd');
 
   // Kick off the simulation.
   await Simulator.run();
