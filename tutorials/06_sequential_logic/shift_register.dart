@@ -45,7 +45,9 @@ void main() async {
 
   Simulator.registerAction(25, () {
     reset.put(0);
-    sin.inject(bin('101'));
+    sin.put(bin('1'));
+    sin.put(bin('0'));
+    sin.put(bin('1'));
   });
   Simulator.registerAction(35, () {
     print(shiftReg.input('s_in').value.toString());
