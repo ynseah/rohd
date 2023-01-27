@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:rohd/rohd.dart';
 
 class ShiftRegister extends Module {
@@ -45,9 +47,6 @@ void main() async {
 
   Simulator.registerAction(25, () {
     reset.put(0);
-    sin.put(bin('1'));
-    sin.put(bin('0'));
-    sin.put(bin('1'));
   });
   Simulator.registerAction(35, () {
     print(shiftReg.input('s_in').value.toString());
@@ -65,5 +64,19 @@ void main() async {
       outputPath: 'tutorials/06_sequential_logic/shiftReg.vcd');
 
   // Kick off the simulation.
-  await Simulator.run();
+  unawaited(Simulator.run());
+
+  sin.inject(LogicValue.x);
+  await reset.nextNegedge;
+
+  final message = [1, 0, 1];
+  for (final m in message) {
+    await clk.nextNegedge;
+    sin.inject(m);
+  }
+
+  await clk.nextNegedge;
+  sin.inject(LogicValue.x);
+
+  await Simulator.simulationEnded;
 }
