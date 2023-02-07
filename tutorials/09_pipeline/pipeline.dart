@@ -30,8 +30,6 @@ class CarrySaveMultiplierPipelineStage extends Module {
                 final maxIndexA = (a.width - 1) + row;
 
                 for (var column = maxIndexA; column >= row; column--) {
-                  // final sumValue = p.get(sum[column]);
-                  // final carryValue = p.get(carry[column - 1]);
                   final fullAdder = FullAdder(
                           a: column == maxIndexA || row == 0
                               ? Const(0)
