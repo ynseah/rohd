@@ -1,5 +1,4 @@
 import 'package:rohd/rohd.dart';
-import '../03_basic_generation/basic_generation.dart';
 import '../05_combinational_logic/combinational_logic.dart';
 
 class CarrySaveMultiplierPipelineStage extends Module {
@@ -26,7 +25,6 @@ class CarrySaveMultiplierPipelineStage extends Module {
       ...List.generate(
           b.width,
           (row) => (p) {
-                print('row: $row');
                 row = row;
                 final columnAdder = <Conditional>[];
                 final maxIndexA = (a.width - 1) + row;
@@ -91,7 +89,6 @@ class CarrySaveMultiplierPipelineStage extends Module {
         <Logic>[
           ...List.generate(
               a.width + 1, (index) => nBitAdder.sum[(a.width) - index]),
-          // ...nBitAdder.sum,
           ...List.generate(
               a.width, (index) => pipeline.get(sum[a.width - index - 1]))
         ].swizzle();
@@ -101,7 +98,6 @@ class CarrySaveMultiplierPipelineStage extends Module {
   Logic get sumRes => output('pipeline_res');
   Logic get carryRes => output('carry_stage');
   Pipeline get pipe => pipeline;
-
   Logic get rCarryRes => output('rcarry_A');
 }
 
@@ -114,30 +110,28 @@ void main() async {
   final csm = CarrySaveMultiplierPipelineStage(a, b, clk);
 
   await csm.build();
-  // print(csm.generateSynth());
 
-  a.put(5);
-  b.put(10);
+  a.put(12);
+  b.put(2);
 
   // Attach a waveform dumper so we can see what happens.
   WaveDumper(csm, outputPath: 'csm.vcd');
 
-  Simulator.registerAction(200, () {
-    print('Answer is ${csm.product.value.toString(includeWidth: false)}');
+  Simulator.registerAction(100, () {
+    // print('Answer is ${csm.product.value.toString(includeWidth: false)}');
     print('Answer is ${csm.product.value.toInt()}');
     // print(csm.rCarryRes.value.toString(includeWidth: false));
     // LogicValue checksum = csm.pipeline.get(csm.sum[2], 0).value;
 
-    print(csm.sumRes.value.toString(includeWidth: false));
-    print(csm.carryRes.value.toString(includeWidth: false));
+    // print(csm.sumRes.value.toString(includeWidth: false));
+    // print(csm.carryRes.value.toString(includeWidth: false));
     // print(checksum.toString(includeWidth: false));
 
-    //check rcarrya
-    print(
-        'ripple carry a: ${csm.rCarryRes.value.toString(includeWidth: false)}');
+    // print(
+    //     'ripple carry a: ${csm.rCarryRes.value.toString(includeWidth: false)}');
   });
 
-  Simulator.setMaxSimTime(200);
+  Simulator.setMaxSimTime(100);
 
   await Simulator.run();
 }
