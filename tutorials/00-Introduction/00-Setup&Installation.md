@@ -3,15 +3,15 @@
 There are two ways of development in ROHD. First, You can run ROHD on GitHub codespace or local machine. 
 
 
-## Setup on Github Codespace
+## Setup on Github Codespaces (Recommended)
 
-1. Navigate to https://github.com/intel/rohd and click on Codespaces. Note that everyone have free access to codespace but with monthly quota. Please check on  https://docs.github.com/en/codespaces/overview to know more.
+1. To access the Codespaces feature on the https://github.com/intel/rohd repository, simply click on the "Codespaces" button. Keep in mind that Codespaces are available for free to everyone, however, there is a monthly usage limit. For more information, please visit the official GitHub Codespaces Overview page at https://docs.github.com/en/codespaces/overview.
 
 > All personal GitHub.com accounts have a monthly quota of free use of GitHub Codespaces included in the Free or Pro plan. You can get started using GitHub Codespaces on your personal account without changing any settings or providing payment details. You can create and use a codespace for any repository you can clone. You can also use a template to create codespaces that are not initially associated with a repository. If you create a codespace from an organization-owned repository, use of the codespace will either be charged to the organization (if the organization is configured for this), or to your personal account. Codespaces created from templates are always charged to your personal account. You can continue using GitHub Codespaces beyond your monthly included storage and compute usage by providing payment details and setting a spending limit. For more information, see "About billing for GitHub Codespaces.
 
 ![step 1](assets/CodespaceSetup/step1.PNG)
 
-2. You will be navigate to a page where GitHub will spin up the container for you. Please wait patietly while GitHub preparing your server.
+2. You will be redirected to a page where GitHub will launch the container for you. Please be patient as GitHub sets up your server.
 
 ![step 2](assets/CodespaceSetup/step2.PNG)
 
@@ -30,7 +30,7 @@ There are two ways of development in ROHD. First, You can run ROHD on GitHub cod
 
 If you can see SystemVerilog code pop up on the terminal. Well, you have successfully set up your development environment on the cloud.
 
-6. To delete the codespace, go back to https://github.com/intel/rohd and click on codespace just like step 1. But this time, you will see more options. Click on the delete option to delete codespace.
+6. To delete the codespace, go back to https://github.com/intel/rohd and click on codespace just like step 1. But this time, you will see more options. Click on the `delete` option to delete codespace.
 
 ![step 6](assets/CodespaceSetup/step6.PNG)
 
