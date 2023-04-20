@@ -19,3 +19,5 @@ The `connectIO` function under the hood calls `addInput` and `addOutput` directl
 ## Serial Peripleral Interface (SPI)
 
 Serial Peripheral Interface (SPI) is an interface bus commonly used to send data between microcontrollers and small peripherals such as shift registers, sensors, and SD cards. It uses separate clock and data lines, along with a select line to choose the device you wish to talk to.
+
+Today, we are going to use ROHD interface to build the SPI peripheral shift register.

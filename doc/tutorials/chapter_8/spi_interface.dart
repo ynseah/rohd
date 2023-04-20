@@ -1,5 +1,7 @@
 // ignore_for_file: avoid_print
 
+import 'dart:async';
+
 import 'package:rohd/rohd.dart';
 
 // Define a set of legal directions for SPI interface, will
@@ -73,31 +75,38 @@ class Controller extends Module {
 }
 
 class Peripheral extends Module {
-  late final SPIInterface shiftReg;
+  Logic get sck => input('sck');
+  Logic get sdi => input('sdi');
+  Logic get cs => input('cs');
 
-  Peripheral(SPIInterface shiftReg) {
-    this.shiftReg = SPIInterface()
+  Logic get sdo => output('sdo');
+  Logic get sout => output('sout');
+
+  late final SPIInterface shiftRegIntF;
+
+  Peripheral(SPIInterface shiftRegIntF) : super(name: 'shift_register') {
+    this.shiftRegIntF = SPIInterface()
       ..connectIO(
         this,
-        shiftReg,
+        shiftRegIntF,
         inputTags: {SPIDirection.controllerOutput},
         outputTags: {SPIDirection.peripheralOutput},
       );
-
-    final sout = addOutput('sout', width: 8);
-
+    // _buildLogic();
     const regWidth = 8;
     final data = Logic(name: 'data', width: regWidth);
+    final sout = addOutput('sout', width: 8);
 
-    Sequential(shiftReg.sck, [
-      IfBlock([
-        Iff(shiftReg.cs, [
-          data < [data.slice(regWidth - 2, 0), shiftReg.sdi].swizzle()
-        ])
-      ]),
+    Sequential(sck, [
+      If(cs, then: [
+        data < [data.slice(regWidth - 2, 0), sdi].swizzle()
+      ], orElse: [
+        data < 0
+      ])
     ]);
 
     sout <= data;
+    sdo <= data.getRange(0, 1);
   }
 }
 
@@ -118,33 +127,38 @@ class TestBench extends Module {
   }
 }
 
-// TODO(Quek): How to make sure send signal and perform Simulation
 void main() async {
-  final reset = Logic(name: 'reset');
-  final sin = Logic(name: 'sin');
-
   final testInterface = SPIInterface();
-  final peri = Peripheral(testInterface);
+  testInterface.sck <= SimpleClockGenerator(10).clk;
 
+  final peri = Peripheral(testInterface);
   await peri.build();
+
+  testInterface.cs.inject(0);
+  testInterface.sdi.inject(0);
 
   print(peri.generateSynth());
 
-  // Future<void> drive(LogicValue val) async {
-  //   cs.put(1);
-  //   for (var i = 0; i < val.width; i++) {
-  //     spi.put(val[i]);
-  //     await clk.nextNegedge;
-  //   }
-  //   cs.put(0);
-  // }
+  void printFlop([String message = '']) {
+    print('@t=${Simulator.time}:\t'
+        ' input=${testInterface.sdi.value}, output '
+        '=${peri.sout.value.toString(includeWidth: false)}\t$message');
+  }
 
-  // drive(LogicValue.ofString('01010101'));
+  Future<void> drive(LogicValue val) async {
+    for (var i = 0; i < val.width; i++) {
+      peri.cs.put(1);
+      peri.sdi.put(val[i]);
+      await peri.sck.nextPosedge;
+
+      printFlop();
+    }
+  }
 
   Simulator.setMaxSimTime(100);
+  unawaited(Simulator.run());
 
-  Simulator.registerAction(25, () {
-    sin.put(1);
-    reset.put(0);
-  });
+  WaveDumper(peri, outputPath: 'doc/tutorials/chapter_8/spi.vcd');
+
+  await drive(LogicValue.ofString('01010101'));
 }
