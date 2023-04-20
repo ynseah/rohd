@@ -1,9 +1,12 @@
+// ignore_for_file: avoid_print
+
 import 'package:rohd/rohd.dart';
 
 // Define a set of legal directions for SPI interface, will
 // be pass as parameter to Interface
 enum SPIDirection { controllerOutput, peripheralOutput }
 
+// Create an interface for Serial Peripheral Interface
 class SPIInterface extends Interface<SPIDirection> {
   // include the getter to the function
   Logic get sck => port('sck'); // serial clock
@@ -12,7 +15,7 @@ class SPIInterface extends Interface<SPIDirection> {
   Logic get cs => port('cs'); // chip select
 
   SPIInterface() {
-    // input from controller
+    // Output from Controller, Input to Peripheral
     setPorts([
       Port('sck'),
       Port('sdi'),
@@ -21,9 +24,9 @@ class SPIInterface extends Interface<SPIDirection> {
       SPIDirection.controllerOutput
     ]);
 
-    // input from peripheral
+    // Output from Peripheral, Input to Controller
     setPorts([
-      Port('sdo', 8),
+      Port('sdo'),
     ], [
       SPIDirection.peripheralOutput
     ]);
@@ -44,7 +47,7 @@ class Controller extends Module {
     _sin = addInput('sin', sin);
 
     // define a new interface, and connect it
-    // to the interface passed in
+    // to the interface passed in.
     this.controller = SPIInterface()
       ..connectIO(
         this,
@@ -53,10 +56,6 @@ class Controller extends Module {
         outputTags: {SPIDirection.controllerOutput}, // Add outputs
       );
 
-    _buildLogic();
-  }
-
-  void _buildLogic() {
     controller.cs <= Const(1);
     controller.sck <= _clk;
 
@@ -73,12 +72,10 @@ class Controller extends Module {
   }
 }
 
-class ShiftRegister extends Module {
+class Peripheral extends Module {
   late final SPIInterface shiftReg;
 
-  ShiftRegister(SPIInterface shiftReg) {
-    // define a new interface, and connect
-    // it to the interface passed in
+  Peripheral(SPIInterface shiftReg) {
     this.shiftReg = SPIInterface()
       ..connectIO(
         this,
@@ -87,13 +84,9 @@ class ShiftRegister extends Module {
         outputTags: {SPIDirection.peripheralOutput},
       );
 
-    _buildLogic();
-  }
+    final sout = addOutput('sout', width: 8);
 
-  void _buildLogic() {
     const regWidth = 8;
-
-    // Local signal
     final data = Logic(name: 'data', width: regWidth);
 
     Sequential(shiftReg.sck, [
@@ -104,8 +97,7 @@ class ShiftRegister extends Module {
       ]),
     ]);
 
-    // assign
-    shiftReg.sdo <= data;
+    sout <= data;
   }
 }
 
@@ -118,12 +110,11 @@ class TestBench extends Module {
   TestBench(Logic reset, Logic sin) {
     reset = addInput('reset', reset);
     sin = addInput('sin', sin);
+
     final sout = addOutput('sout', width: 8);
 
     final ctrl = Controller(spiInterface, reset, clk, sin);
-    final peripheral = ShiftRegister(spiInterface);
-
-    sout <= peripheral.shiftReg.sdo;
+    final peripheral = Peripheral(spiInterface);
   }
 }
 
@@ -132,17 +123,28 @@ void main() async {
   final reset = Logic(name: 'reset');
   final sin = Logic(name: 'sin');
 
-  final modTestBench = TestBench(reset, sin);
-  await modTestBench.build();
+  final testInterface = SPIInterface();
+  final peri = Peripheral(testInterface);
 
-  print(modTestBench.generateSynth());
+  await peri.build();
+
+  print(peri.generateSynth());
+
+  // Future<void> drive(LogicValue val) async {
+  //   cs.put(1);
+  //   for (var i = 0; i < val.width; i++) {
+  //     spi.put(val[i]);
+  //     await clk.nextNegedge;
+  //   }
+  //   cs.put(0);
+  // }
+
+  // drive(LogicValue.ofString('01010101'));
 
   Simulator.setMaxSimTime(100);
 
   Simulator.registerAction(25, () {
     sin.put(1);
     reset.put(0);
-
-    print(modTestBench.sout.value.toInt());
   });
 }
