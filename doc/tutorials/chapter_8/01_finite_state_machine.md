@@ -247,7 +247,7 @@ Future<void> main({bool noPrint = false}) async {
 }
 ```
 
-The FSM abstraction come with state diagram generator using mermaid. We can create a markdown file using the function `generateDiagram()`. You can install mermaid extension in VSCode to preview the diagram. 
+The FSM abstraction come with state diagram generator using mermaid. We can create a markdown file using the function `generateDiagram()`. You can install mermaid extension in VSCode to preview the diagram.
 
 ```dart
 oven.ovenStateMachine.generateDiagram(outputPath: 'oven_fsm.md');
