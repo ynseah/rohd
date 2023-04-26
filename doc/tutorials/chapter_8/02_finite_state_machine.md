@@ -128,7 +128,7 @@ key: `Logic(name: 'button_start')..gets(button.eq(Const(Button.start.value, widt
 value: `OvenState.cooking`
 3. actions: `[led < LEDLight.blue.value, counterReset < 1, end < 0 ]`
 
-The other states are coded as below.
+The other states are coded as below. The code are well documented with comments below.
 
 ```dart
 final states = [

@@ -39,10 +39,6 @@ class Counter extends Module {
           inputTags: {CounterDirection.inward, CounterDirection.misc},
           outputTags: {CounterDirection.outward});
 
-    _buildLogic();
-  }
-
-  void _buildLogic() {
     final nextVal = Logic(name: 'nextVal', width: intf.width);
 
     nextVal <= val + 1;
@@ -71,7 +67,8 @@ Future<void> main() async {
 
   print(counter.generateSynth());
 
-  WaveDumper(counter, outputPath: 'counter.vcd');
+  WaveDumper(counter,
+      outputPath: 'doc/tutorials/chapter_8/counter_interface.vcd');
   Simulator.registerAction(25, () {
     counterInterface.en.put(1);
     counterInterface.reset.put(0);
