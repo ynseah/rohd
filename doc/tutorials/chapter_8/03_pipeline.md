@@ -53,4 +53,16 @@ ROHD also includes a version of `Pipeline` that support a ready/valid protocol c
 
 ## Carry Save Multiplier
 
-Carry Save Multiplier is a parallel multiplier for unsigned operands. It is composed of 2-input AND gates for producing the partial products, a series of carry save adders for adding them and a ripple-carry adder for producing the final product.
+Carry Save Multiplier is a digital circuit used for multiplying two binary numbers. It is a specialized multiplication technique that is commonly employed in high-performance arithmetic units, particularly in digial signal processing (DSP) applications.
+
+The carry-save multiplier approach aims to enhance the speed and efficiency of the multiplication operation by breaking it down into smaller parallel operations. Instead of directly multiplying the netire multiplicand and mulltiplier, the carry-save multiplier splits them into smaller components and performs independent multiplications on each components.
+
+We can build carry save multiplier using carry save adder we build last time. The diagram below shows the architectures of the carry save multiplier built using carry save adder.
+
+![carrysave multiplier](./assets/4x4-bits-Carry-Save-Multiplier-2.jpg)
+
+### Pipeline Stage
+
+In this section, we will start by understanding the first stage of the pipeline.
+
+Assume that we have input A = 1011 and B = 1100.
