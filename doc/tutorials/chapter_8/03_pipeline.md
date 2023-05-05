@@ -51,7 +51,7 @@ You can also optionally add stalls and reset values for signals in the pipeline.
 
 ROHD also includes a version of `Pipeline` that support a ready/valid protocol called `ReadyValidPipeline`. The syntax looks the same, but has some additional parameters for readys and valids.
 
-## Carry Save Multiplier
+## Carry Save Multiplier (4 x 4)
 
 Carry Save Multiplier is a digital circuit used for multiplying two binary numbers. It is a specialized multiplication technique that is commonly employed in high-performance arithmetic units, particularly in digial signal processing (DSP) applications.
 
@@ -63,6 +63,24 @@ We can build carry save multiplier using carry save adder we build last time. Th
 
 ### Pipeline Stage
 
-In this section, we will start by understanding the first stage of the pipeline.
+Assume that we have input **A = 1100** and **B = 0010**. The final results or the last stage would be **11000**.
 
-Assume that we have input A = 1011 and B = 1100.
+The **first stage** of the carry save multiplier consists of Full Adder that takes in AND gate of Ax and B0 where x is the bit position of the inputs a.
+
+In the stage 1, the full adder takes in:
+Inputs
+A: 0
+B: AND(Ax, B0)
+C-In: 0
+
+In the stage 2 to 4, the full adder takes:
+Inputs
+A: Output sum from previous stage
+B: AND(Ax, By), where x is the single bit of the A, while y is the bits based on stage.
+C-In: Output carry-out from previous stage
+
+Notice the diagram, the first index of the FA always takes in 0 as input A.
+First FA
+A: 0
+
+The last stage is still carry propagate adder.
