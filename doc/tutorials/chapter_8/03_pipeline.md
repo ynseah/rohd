@@ -4,7 +4,7 @@
 
 In this chapter:
 
-- You will learn how to use ROHD pipeline abstraction API to build carry save multiplier.
+- You will learn how to use ROHD pipeline abstraction API to build Carry Save Multiplier (CSM).
 
 ## ROHD Pipelines
 
@@ -152,3 +152,73 @@ pipeline = Pipeline(clk, stages: [
 
 By doing this, we have successfully created stages 0 to 3. Then, we also want to manually add the last stage where we just swizzle the `sum` and `carry` and connect to `rCarryA` and `rCarryB` respectively.
 
+```dart
+...
+(p) => [
+  // Swizzle all the value with Const(0) + sum to the a.width - 1
+  rCarryA <
+      <Logic>[
+        Const(0),
+        ...List.generate(
+            a.width - 1, // a.width - 1 because the first index is 0
+            (index) => p.get(sum[(a.width + b.width - 2) - index]))
+      ].swizzle(),
+
+  // Swizzle all the carry to the a.width position
+  rCarryB <
+      <Logic>[
+        ...List.generate(
+            a.width, // all a.width
+            (index) => p.get(carry[(a.width + b.width - 2) - index]))
+      ].swizzle()
+]
+```
+
+To get our final result, we can instantiate our `NBitAdder` module and pass `rCarryA` and `rCarryB` to the module. Lastly, we need to swizzle the results from nBitAdder and last 4 bits from the pipieline.
+
+```dart
+final nBitAdder = NBitAdder(rCarryA, rCarryB);
+
+product <=
+    <Logic>[
+      ...List.generate(
+        a.width + 1,
+        (index) => nBitAdder.sum[(a.width) - index],
+      ),
+      ...List.generate(
+        a.width,
+        (index) => pipeline.get(sum[a.width - index - 1]),
+      )
+    ].swizzle();
+```
+
+We can test and simulate the final output by creating the `main()` function as below:
+
+```dart
+void main() async {
+  final a = Logic(name: 'a', width: 4);
+  final b = Logic(name: 'b', width: 4);
+
+  final clk = SimpleClockGenerator(10).clk;
+
+  final csm = CarrySaveMultiplier(a, b, clk);
+
+  await csm.build();
+
+  a.put(12);
+  b.put(2);
+
+  // Attach a waveform dumper so we can see what happens.
+  WaveDumper(csm, outputPath: 'csm.vcd');
+
+  Simulator.registerAction(100, () {
+    print('Answer is ${csm.product.value.toInt()}');
+  });
+
+  Simulator.setMaxSimTime(100);
+
+  await Simulator.run();
+}
+```
+
+Well, that is for the pipeline. Hope you enjoyed the tutorials. You can find the executable version of code at [carry_save_multiplier.dart](./carry_save_multiplier.dart).

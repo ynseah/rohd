@@ -82,7 +82,6 @@ class CarrySaveMultiplier extends Module {
   }
 
   Logic get product => output('product');
-  Pipeline get pipe => pipeline;
 }
 
 void main() async {
