@@ -79,7 +79,7 @@ In the stage 2 to 4, the full adder takes:
   - B: AND(Ax, By), where x is the single bit of the A, while y is the bits based on stage.
   - C-IN: Output **carry-out** from previous stage
 
-Also notice the diagram, the first index of the FA always takes in 0 as input A and the **final stage** is consists of the **N-Bit Adder** we created previously. 
+Also notice the diagram, the first index of the FA always takes in 0 as input A and the **final stage** is consists of the **N-Bit Adder** we created previously.
 
 Note that n-bit adder is also called as ripple carry adder.
 
