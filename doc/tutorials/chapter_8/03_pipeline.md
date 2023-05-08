@@ -61,13 +61,11 @@ We can build carry save multiplier using carry save adder built in [chapter 5](.
 
 ![carrysave multiplier](./assets/4x4-bits-Carry-Save-Multiplier-2.png)
 
-### Pipeline Stage
-
 Assume that we have binary input **A = 1100** (decimal: 12) and **B = 0010** (decimal: 2). The final results would be **11000** (decimal: 24).
 
-The **first stage** of the carry save multiplier consists of Full Adder that takes in AND gate of Ax and B0 where x is the bit position of the inputs a.
+The **first stage** of the carry save multiplier consists of Full Adder that takes in AND gate of `Ax` and `B0` where `x` is the bit position of the inputs a.
 
-In the stage 1, the full adder takes in:
+In the stage 0, the full adder takes in:
 
 - Inputs
   - A: 0
@@ -81,25 +79,28 @@ In the stage 2 to 4, the full adder takes:
   - B: AND(Ax, By), where x is the single bit of the A, while y is the bits based on stage.
   - C-IN: Output **carry-out** from previous stage
 
-Notice the diagram, the first index of the FA always takes in 0 as input A.
-First FA
+Also notice the diagram, the first index of the FA always takes in 0 as input A and the **final stage** is consists of the **N-Bit Adder** we created previously. 
 
-- A: 0
+Note that n-bit adder is also called as ripple carry adder.
 
-and the last stage is consists of the N-Bit Adder we created previously.
-
-Let start by creating the `CarrySaveMultiplier` Module. The module takes in inputs `a`, `b` and a `clk`. Let straight away add the Inputs to the port.
+Let start by creating the `CarrySaveMultiplier` Module. The module takes in inputs `a`, `b` and a `clk` and return an output port named `product`. We will also need two internal signals `rCarryA` and `rCarryB` where its will contains the signals to be passed to the nBitAdder or ripple carry adder later in the final stage.
 
 ```dart
 class CarrySaveMultiplier extends Module {
   CarrySaveMultiplier(Logic a, Logic b, Logic clk, {super.name = 'carry_save_multiplier'}) {
     a = addInput('a', a, width: a.width);
     b = addInput('b', b, width: b.width);
+
+    final product = addOutput('product', width: a.width + b.width + 1);
+
+    final rCarryA = Logic(name: 'rcarry_a', width: a.width);
+    final rCarryB = Logic(name: 'rcarry_b', width: b.width);
+
   }
 }
 ```
 
-Since we will be using `FullAdder` and `NBitAdder` module in chapter 5. We will need to import from chapter 5.
+Since we will be using `FullAdder` and `NBitAdder` module in chapter 5. We will need to import the module from chapter 5.
 
 ```dart
 import '../chapter_5/n_bit_adder.dart';
