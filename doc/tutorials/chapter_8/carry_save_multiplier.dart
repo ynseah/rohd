@@ -16,9 +16,6 @@ class CarrySaveMultiplier extends Module {
     b = addInput('b', b, width: b.width);
 
     final product = addOutput('product', width: a.width + b.width + 1);
-    final pipelineRes = addOutput('pipeline_res', width: sum.length);
-    final rippleCarryA = addOutput('rcarry_A', width: a.width);
-    final carryStage = addOutput('carry_stage', width: carry.length);
 
     final rCarryA = Logic(name: 'rcarry_a', width: a.width);
     final rCarryB = Logic(name: 'rcarry_b', width: b.width);
@@ -69,23 +66,6 @@ class CarrySaveMultiplier extends Module {
           ]
     ]);
 
-    rippleCarryA <= rCarryA;
-    pipelineRes <=
-        <Logic>[
-          ...List.generate(
-            sum.length,
-            (index) => pipeline.get(sum[index], 3),
-          )
-        ].swizzle();
-
-    carryStage <=
-        <Logic>[
-          ...List.generate(
-            carry.length,
-            (index) => pipeline.get(carry[index], 3),
-          )
-        ].swizzle();
-
     final nBitAdder = NBitAdder(rCarryA, rCarryB);
 
     product <=
@@ -102,10 +82,7 @@ class CarrySaveMultiplier extends Module {
   }
 
   Logic get product => output('product');
-  Logic get sumRes => output('pipeline_res');
-  Logic get carryRes => output('carry_stage');
   Pipeline get pipe => pipeline;
-  Logic get rCarryRes => output('rcarry_A');
 }
 
 void main() async {
@@ -125,17 +102,7 @@ void main() async {
   WaveDumper(csm, outputPath: 'csm.vcd');
 
   Simulator.registerAction(100, () {
-    // print('Answer is ${csm.product.value.toString(includeWidth: false)}');
     print('Answer is ${csm.product.value.toInt()}');
-    // print(csm.rCarryRes.value.toString(includeWidth: false));
-    // LogicValue checksum = csm.pipeline.get(csm.sum[2], 0).value;
-
-    // print(csm.sumRes.value.toString(includeWidth: false));
-    // print(csm.carryRes.value.toString(includeWidth: false));
-    // print(checksum.toString(includeWidth: false));
-
-    // print(
-    //     'ripple carry a: ${csm.rCarryRes.value.toString(includeWidth: false)}');
   });
 
   Simulator.setMaxSimTime(100);
