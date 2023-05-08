@@ -53,34 +53,102 @@ ROHD also includes a version of `Pipeline` that support a ready/valid protocol c
 
 ## Carry Save Multiplier (4 x 4)
 
-Carry Save Multiplier is a digital circuit used for multiplying two binary numbers. It is a specialized multiplication technique that is commonly employed in high-performance arithmetic units, particularly in digial signal processing (DSP) applications.
+Carry Save Multiplier is a digital circuit used for multiplying two binary numbers. It is a specialized multiplication technique that is commonly employed in high-performance arithmetic units, particularly in digital signal processing (DSP) applications.
 
-The carry-save multiplier approach aims to enhance the speed and efficiency of the multiplication operation by breaking it down into smaller parallel operations. Instead of directly multiplying the netire multiplicand and mulltiplier, the carry-save multiplier splits them into smaller components and performs independent multiplications on each components.
+The carry-save multiplier approach aims to enhance the speed and efficiency of the multiplication operation by breaking it down into smaller parallel operations. Instead of directly multiplying the etire multiplicand and mulltiplier, the carry-save multiplier splits them into smaller components and performs independent multiplications on each components.
 
-We can build carry save multiplier using carry save adder we build last time. The diagram below shows the architectures of the carry save multiplier built using carry save adder.
+We can build carry save multiplier using carry save adder built in [chapter 5](../chapter_5/00_basic_modules.md). The diagram below shows the architectures of the carry save multiplier built using Full Adder and N-Bit Adder.
 
-![carrysave multiplier](./assets/4x4-bits-Carry-Save-Multiplier-2.jpg)
+![carrysave multiplier](./assets/4x4-bits-Carry-Save-Multiplier-2.png)
 
 ### Pipeline Stage
 
-Assume that we have input **A = 1100** and **B = 0010**. The final results or the last stage would be **11000**.
+Assume that we have binary input **A = 1100** (decimal: 12) and **B = 0010** (decimal: 2). The final results would be **11000** (decimal: 24).
 
 The **first stage** of the carry save multiplier consists of Full Adder that takes in AND gate of Ax and B0 where x is the bit position of the inputs a.
 
 In the stage 1, the full adder takes in:
-Inputs
-A: 0
-B: AND(Ax, B0)
-C-In: 0
+
+- Inputs
+  - A: 0
+  - B: AND(Ax, B0)
+  - C-IN: 0
 
 In the stage 2 to 4, the full adder takes:
-Inputs
-A: Output sum from previous stage
-B: AND(Ax, By), where x is the single bit of the A, while y is the bits based on stage.
-C-In: Output carry-out from previous stage
+
+- Inputs
+  - A: Output **Sum** from previous stage
+  - B: AND(Ax, By), where x is the single bit of the A, while y is the bits based on stage.
+  - C-IN: Output **carry-out** from previous stage
 
 Notice the diagram, the first index of the FA always takes in 0 as input A.
 First FA
-A: 0
 
-The last stage is still carry propagate adder.
+- A: 0
+
+and the last stage is consists of the N-Bit Adder we created previously.
+
+Let start by creating the `CarrySaveMultiplier` Module. The module takes in inputs `a`, `b` and a `clk`. Let straight away add the Inputs to the port.
+
+```dart
+class CarrySaveMultiplier extends Module {
+  CarrySaveMultiplier(Logic a, Logic b, Logic clk, {super.name = 'carry_save_multiplier'}) {
+    a = addInput('a', a, width: a.width);
+    b = addInput('b', b, width: b.width);
+  }
+}
+```
+
+Since we will be using `FullAdder` and `NBitAdder` module in chapter 5. We will need to import from chapter 5.
+
+```dart
+import '../chapter_5/n_bit_adder.dart';
+```
+
+Back to our Module, we will need to declare the pipeline using `Pipeline` class. `Pipeline` takes in a clock `clk` and a list of stages. Well, we can think of every pipeline stage is a row. While every row will have `(a.width - 1) + row`.
+
+The first stage or row of `FullAdder` will takes in 0 for `a` and `c-in`. We can also see that for every first column, the input `a` will also be 0. Therefore, we can represent `a` as `column == (a.width - 1) + row || row == 0 ? Const(0) : p.get(sum[column])`. Same goes to `carryIn`, where we can represent `carryIn` as `row == 0 ? Const(0) : p.get(carry[column - 1])`.
+
+Note that, we use `p.get()` to get the data from previous pipeline. As for `b`, we can represent using simple `AND` operation `a[column - row] & b[row]`.
+
+Summary:
+
+- a: `column == (a.width - 1) + row || row == 0 ? Const(0) : p.get(sum[column])`
+- b: `a[column - row] & b[row]`
+- c-in: `row == 0 ? Const(0) : p.get(carry[column - 1])`
+
+Inside the pipeline stages, we can use `...List.generate()` to generate the FullAdder.
+
+```dart
+pipeline = Pipeline(clk, stages: [
+  ...List.generate(
+    b.width,
+    (row) => (p) {
+      final columnAdder = <Conditional>[];
+      final maxIndexA = (a.width - 1) + row;
+
+      // for each of the column, we want to skip the last few column based on the current row.
+      for (var column = maxIndexA; column >= row; column--) {
+        final fullAdder = FullAdder(
+          a: column == maxIndexA || row == 0
+                        ? Const(0)
+                        : p.get(sum[column]),
+          b: a[column - row] & b[row], 
+          carryIn: row == 0 ? Const(0) : p.get(carry[column - 1]) // Previous carry-out
+        ).fullAdderRes;
+
+        columnAdder
+        ..add(p.get(carry[column]) < fullAdder.cOut)
+        ..add(
+          p.get(sum[column]) < fullAdder.sum,
+        );
+      }
+
+      return columnAdder;
+    },
+  ),
+]);
+```
+
+By doing this, we have successfully created stages 0 to 3. Then, we also want to manually add the last stage where we just swizzle the `sum` and `carry` and connect to `rCarryA` and `rCarryB` respectively.
+
