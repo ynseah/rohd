@@ -2,45 +2,43 @@ import 'package:rohd/rohd.dart';
 import '../chapter_5/n_bit_adder.dart';
 
 class CarrySaveMultiplier extends Module {
-  // Add Input and output port
+  // Add Input and output port for FA sum and Carry
   final List<Logic> sum =
       List.generate(8, (index) => Logic(name: 'sum_$index'));
   final List<Logic> carry =
       List.generate(8, (index) => Logic(name: 'carry_$index'));
 
   late final Pipeline pipeline;
-  CarrySaveMultiplier(Logic a, Logic b, Logic clk,
+  CarrySaveMultiplier(Logic valA, Logic valB, Logic clk,
       {super.name = 'carry_save_multiplier'}) {
     // Declare Input Node
-    a = addInput('a', a, width: a.width);
-    b = addInput('b', b, width: b.width);
+    valA = addInput('a', valA, width: valA.width);
+    valB = addInput('b', valB, width: valB.width);
+    final product = addOutput('product', width: valA.width + valB.width + 1);
 
-    final product = addOutput('product', width: a.width + b.width + 1);
-
-    final rCarryA = Logic(name: 'rcarry_a', width: a.width);
-    final rCarryB = Logic(name: 'rcarry_b', width: b.width);
+    // Internal Signals A and B for Ripple Carry Adder
+    final rCarryA = Logic(name: 'rcarry_a', width: valA.width);
+    final rCarryB = Logic(name: 'rcarry_b', width: valB.width);
 
     pipeline = Pipeline(clk, stages: [
       ...List.generate(
-        b.width, // how many rows to generate
+        valB.width, // how many rows to generate
         (row) => (p) {
           final columnAdder = <Conditional>[];
-          final maxIndexA = (a.width - 1) + row;
+          final maxIndexA = (valA.width - 1) + row;
 
           for (var column = maxIndexA; column >= row; column--) {
             final fullAdder = FullAdder(
                     a: column == maxIndexA || row == 0
                         ? Const(0)
                         : p.get(sum[column]),
-                    b: a[column - row] & b[row],
+                    b: p.get(valA)[column - row] & p.get(valB)[row],
                     carryIn: row == 0 ? Const(0) : p.get(carry[column - 1]))
                 .fullAdderRes;
 
             columnAdder
               ..add(p.get(carry[column]) < fullAdder.cOut)
-              ..add(
-                p.get(sum[column]) < fullAdder.sum,
-              );
+              ..add(p.get(sum[column]) < fullAdder.sum);
           }
 
           return columnAdder;
@@ -48,35 +46,41 @@ class CarrySaveMultiplier extends Module {
       ),
       (p) => [
             // Swizzle all the value with Const(0) + sum
-            rCarryA <
+            p.get(rCarryA) <
                 <Logic>[
                   Const(0),
                   ...List.generate(
-                      a.width - 1, // a.width - 1 because the first index is 0
-                      (index) => p.get(sum[(a.width + b.width - 2) - index]))
+                      valA.width -
+                          1, // a.width - 1 because the first index is 0
+                      (index) =>
+                          p.get(sum[(valA.width + valB.width - 2) - index]))
                 ].swizzle(),
 
             // Swizzle all the value with carry
-            rCarryB <
+            p.get(rCarryB) <
                 <Logic>[
                   ...List.generate(
-                      a.width, // all a.width
-                      (index) => p.get(carry[(a.width + b.width - 2) - index]))
+                      valA.width, // all a.width
+                      (index) =>
+                          p.get(carry[(valA.width + valB.width - 2) - index]))
                 ].swizzle()
-          ]
+          ],
     ]);
 
-    final nBitAdder = NBitAdder(rCarryA, rCarryB);
+    final nBitAdder = NBitAdder(
+      pipeline.get(rCarryA),
+      pipeline.get(rCarryB),
+    );
 
     product <=
         <Logic>[
           ...List.generate(
-            a.width + 1,
-            (index) => nBitAdder.sum[(a.width) - index],
+            valA.width + 1,
+            (index) => nBitAdder.sum[(valA.width) - index],
           ),
           ...List.generate(
-            a.width,
-            (index) => pipeline.get(sum[a.width - index - 1]),
+            valA.width,
+            (index) => pipeline.get(sum[valA.width - index - 1]),
           )
         ].swizzle();
   }
@@ -94,14 +98,25 @@ void main() async {
 
   await csm.build();
 
+  // after one cycle, change the value of a and b
   a.put(12);
   b.put(2);
 
   // Attach a waveform dumper so we can see what happens.
   WaveDumper(csm, outputPath: 'csm.vcd');
 
+  Simulator.registerAction(20, () {
+    // change the value of a and b after 1 cycle
+    a.put(10);
+    b.put(11);
+  });
+
+  Simulator.registerAction(50, () {
+    print('First Answer is: ${csm.product.value.toInt()}');
+  });
+
   Simulator.registerAction(100, () {
-    print('Answer is ${csm.product.value.toInt()}');
+    print('Second Answer is ${csm.product.value.toInt()}');
   });
 
   Simulator.setMaxSimTime(100);

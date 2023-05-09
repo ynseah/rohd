@@ -48,7 +48,7 @@ class NBitAdder extends Module {
   Logic a;
   Logic b;
 
-  NBitAdder(this.a, this.b) {
+  NBitAdder(this.a, this.b) : super(name: 'ripple_carry_adder') {
     // Declare Input Node
     a = addInput('a', a, width: a.width);
     b = addInput('b', b, width: b.width);
