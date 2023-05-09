@@ -309,4 +309,12 @@ Well, that is for the pipeline. Hope you enjoyed the tutorials. You can find the
 
 ## Exercise
 
-1. Can you create a simple 4-stages pipeline that multiplies an input `a` by itself, and outputs the result named `result`?
+1. Can you create a simple 4-stages pipeline that perform the following operation on each stage:
+
+`a + (a * stage_num)`
+
+where `a` is an input variable from user, and `stage_num` takes the values of 0 to 3 based on it current stage.
+
+In each stage, the pipeline should multiply the input `a` by the stage number and add the result to the input `a` to obtain the stage output.
+
+Answer to this exercise can be found at [answers/exercise_3_pipeline.dart](./answers/exercise_3_pipeline.dart)
