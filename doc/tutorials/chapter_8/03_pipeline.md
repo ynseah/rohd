@@ -306,3 +306,7 @@ void main() async {
 ```
 
 Well, that is for the pipeline. Hope you enjoyed the tutorials. You can find the executable version of code at [carry_save_multiplier.dart](./carry_save_multiplier.dart).
+
+## Exercise
+
+1. Can you create a simple 4-stages pipeline that multiplies an input `a` by itself, and outputs the result named `result`?
