@@ -16,61 +16,59 @@ class CarrySaveMultiplier extends Module {
     valB = addInput('b', valB, width: valB.width);
     clk = addInput('clk', clk);
     reset = addInput('reset', reset);
+
     final product = addOutput('product', width: valA.width + valB.width + 1);
 
-    // Internal Signals A and B for Ripple Carry Adder
     final rCarryA = Logic(name: 'rcarry_a', width: valA.width);
     final rCarryB = Logic(name: 'rcarry_b', width: valB.width);
 
-    pipeline = Pipeline(clk,
-        stages: [
-          ...List.generate(
-            valB.width, // how many rows to generate
-            (row) => (p) {
-              final columnAdder = <Conditional>[];
-              final maxIndexA = (valA.width - 1) + row;
+    pipeline = Pipeline(
+      clk,
+      stages: [
+        ...List.generate(
+          valB.width,
+          (row) => (p) {
+            final columnAdder = <Conditional>[];
+            final maxIndexA = (valA.width - 1) + row;
 
-              for (var column = maxIndexA; column >= row; column--) {
-                final fullAdder = FullAdder(
-                        a: column == maxIndexA || row == 0
-                            ? Const(0)
-                            : p.get(sum[column]),
-                        b: p.get(valA)[column - row] & p.get(valB)[row],
-                        carryIn: row == 0 ? Const(0) : p.get(carry[column - 1]))
-                    .fullAdderRes;
+            for (var column = maxIndexA; column >= row; column--) {
+              final fullAdder = FullAdder(
+                      a: column == maxIndexA || row == 0
+                          ? Const(0)
+                          : p.get(sum[column]),
+                      b: p.get(valA)[column - row] & p.get(valB)[row],
+                      carryIn: row == 0 ? Const(0) : p.get(carry[column - 1]))
+                  .fullAdderRes;
 
-                columnAdder
-                  ..add(p.get(carry[column]) < fullAdder.cOut)
-                  ..add(p.get(sum[column]) < fullAdder.sum);
-              }
+              columnAdder
+                ..add(p.get(carry[column]) < fullAdder.cOut)
+                ..add(p.get(sum[column]) < fullAdder.sum);
+            }
 
-              return columnAdder;
-            },
-          ),
-          (p) => [
-                // Swizzle all the value with Const(0) + sum
-                p.get(rCarryA) <
-                    <Logic>[
-                      Const(0),
-                      ...List.generate(
-                          valA.width -
-                              1, // a.width - 1 because the first index is 0
-                          (index) =>
-                              p.get(sum[(valA.width + valB.width - 2) - index]))
-                    ].swizzle(),
-
-                // Swizzle all the value with carry
-                p.get(rCarryB) <
-                    <Logic>[
-                      ...List.generate(
-                          valA.width, // all a.width
-                          (index) => p.get(
-                              carry[(valA.width + valB.width - 2) - index]))
-                    ].swizzle()
-              ],
-        ],
-        reset: reset,
-        resetValues: {product: Const(0)});
+            return columnAdder;
+          },
+        ),
+        (p) => [
+              p.get(rCarryA) <
+                  <Logic>[
+                    Const(0),
+                    ...List.generate(
+                        valA.width - 1,
+                        (index) =>
+                            p.get(sum[(valA.width + valB.width - 2) - index]))
+                  ].swizzle(),
+              p.get(rCarryB) <
+                  <Logic>[
+                    ...List.generate(
+                        valA.width,
+                        (index) =>
+                            p.get(carry[(valA.width + valB.width - 2) - index]))
+                  ].swizzle()
+            ],
+      ],
+      reset: reset,
+      resetValues: {product: Const(0)},
+    );
 
     final nBitAdder = NBitAdder(
       pipeline.get(rCarryA),
@@ -120,11 +118,16 @@ void main() async {
     b.put(11);
   });
 
+  Simulator.registerAction(60, () {
+    a.put(10);
+    b.put(6);
+  });
+
   csm.product.changed.listen((event) {
     print('@t=${Simulator.time}, product is: ${event.newValue.toInt()}');
   });
 
-  Simulator.setMaxSimTime(100);
+  Simulator.setMaxSimTime(150);
 
   await Simulator.run();
 }

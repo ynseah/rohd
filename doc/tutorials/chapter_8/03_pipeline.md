@@ -83,19 +83,36 @@ In the stage 2 to 4, the full adder takes:
 As shown in the diagram, the first index of the FA always takes 0 as input A, and the **final stage** consists of the **N-Bit Adder** we created previously.
 Note that n-bit adder is also called as ripple carry adder.
 
-Let's start by creating the `CarrySaveMultiplier` module. The module takes inputs `a`, `b`, and a `clk`, and returns an output port named `product`. We will also need two internal signals, `rCarryA` and `rCarryB`, which will contain the signals to be passed to the nBitAdder or ripple carry adder later in the final stage.
+Let's start by creating the `CarrySaveMultiplier` module. The module takes inputs `a`, `b`, `reset` and a `clk`, and returns an output port named `product`. We will also need two internal signals, `rCarryA` and `rCarryB`, which will contain the signals to be passed to the nBitAdder or ripple carry adder later in the final stage.
+
+Let's also created two List of Logic that save `sum` and `carry` from each of the stage. Since we will be using ROHD pipeline for this module, let also created a global variable for ROHD pipeline.
+
+We can also create a getter function that get the output of `product`.
 
 ```dart
 class CarrySaveMultiplier extends Module {
-  CarrySaveMultiplier(Logic a, Logic b, Logic clk, {super.name = 'carry_save_multiplier'}) {
-    a = addInput('a', a, width: a.width);
-    b = addInput('b', b, width: b.width);
+  final List<Logic> sum =
+      List.generate(8, (index) => Logic(name: 'sum_$index'));
+  final List<Logic> carry =
+      List.generate(8, (index) => Logic(name: 'carry_$index'));
+
+  late final Pipeline pipeline;
+
+  CarrySaveMultiplier(Logic valA, Logic valB, Logic clk, Logic reset,
+      {super.name = 'carry_save_multiplier'}) {
+    // Declare Input Node
+    valA = addInput('a', valA, width: valA.width);
+    valB = addInput('b', valB, width: valB.width);
+    clk = addInput('clk', clk);
+    reset = addInput('reset', reset);
 
     final product = addOutput('product', width: a.width + b.width + 1);
 
-    final rCarryA = Logic(name: 'rcarry_a', width: a.width);
-    final rCarryB = Logic(name: 'rcarry_b', width: b.width);
+    final rCarryA = Logic(name: 'rcarry_a', width: valA.width);
+    final rCarryB = Logic(name: 'rcarry_b', width: valB.width);
   }
+
+  Logic get product => output('product');
 }
 ```
 
@@ -120,76 +137,127 @@ Summary:
 In each pipeline stage, we can use `...List.generate()` to generate the `FullAdder`.
 
 ```dart
-pipeline = Pipeline(clk, stages: [
-  ...List.generate(
-    b.width,
-    (row) => (p) {
-      final columnAdder = <Conditional>[];
-      final maxIndexA = (a.width - 1) + row;
+pipeline = Pipeline(clk,
+  stages: [
+    ...List.generate(
+      valB.width,
+      (row) => (p) {
+        final columnAdder = <Conditional>[];
+        final maxIndexA = (valA.width - 1) + row;
 
-      // for each of the column, we want to skip the last few column based on the current row.
-      for (var column = maxIndexA; column >= row; column--) {
-        final fullAdder = FullAdder(
-          a: column == maxIndexA || row == 0
-                        ? Const(0)
-                        : p.get(sum[column]),
-          b: a[column - row] & b[row], 
-          carryIn: row == 0 ? Const(0) : p.get(carry[column - 1]) // Previous carry-out
-        ).fullAdderRes;
+        for (var column = maxIndexA; column >= row; column--) {
+          final fullAdder = FullAdder(
+                  a: column == maxIndexA || row == 0
+                      ? Const(0)
+                      : p.get(sum[column]),
+                  b: p.get(valA)[column - row] & p.get(valB)[row],
+                  carryIn: row == 0 ? Const(0) : p.get(carry[column - 1]))
+              .fullAdderRes;
 
-        columnAdder
-        ..add(p.get(carry[column]) < fullAdder.cOut)
-        ..add(
-          p.get(sum[column]) < fullAdder.sum,
-        );
-      }
+          columnAdder
+            ..add(p.get(carry[column]) < fullAdder.cOut)
+            ..add(p.get(sum[column]) < fullAdder.sum);
+        }
 
-      return columnAdder;
-    },
-  ),
-]);
+        return columnAdder;
+      },
+    )],
+);
 ```
 
 We have successfully created stages 0 to 3. Next, we manually add the final stage where we swizzle the `sum` and `carry` and connect them to `rCarryA` and `rCarryB`, respectively.
 
 ```dart
-...
 (p) => [
-  // Swizzle all the value with Const(0) + sum to the a.width - 1
-  rCarryA <
+  p.get(rCarryA) <
       <Logic>[
         Const(0),
         ...List.generate(
-            a.width - 1, // a.width - 1 because the first index is 0
-            (index) => p.get(sum[(a.width + b.width - 2) - index]))
+            valA.width - 1,
+            (index) =>
+                p.get(sum[(valA.width + valB.width - 2) - index]))
       ].swizzle(),
-
-  // Swizzle all the carry to the a.width position
-  rCarryB <
+  p.get(rCarryB) <
       <Logic>[
         ...List.generate(
-            a.width, // all a.width
-            (index) => p.get(carry[(a.width + b.width - 2) - index]))
+            valA.width,
+            (index) =>
+                p.get(carry[(valA.width + valB.width - 2) - index]))
       ].swizzle()
-]
+],
+```
+
+Also not to forget to set the reset signals in pipeline. Your final version of the pipeline will look like this.
+
+```dart
+pipeline = Pipeline(
+  clk,
+  stages: [
+    ...List.generate(
+      valB.width,
+      (row) => (p) {
+        final columnAdder = <Conditional>[];
+        final maxIndexA = (valA.width - 1) + row;
+
+        for (var column = maxIndexA; column >= row; column--) {
+          final fullAdder = FullAdder(
+                  a: column == maxIndexA || row == 0
+                      ? Const(0)
+                      : p.get(sum[column]),
+                  b: p.get(valA)[column - row] & p.get(valB)[row],
+                  carryIn: row == 0 ? Const(0) : p.get(carry[column - 1]))
+              .fullAdderRes;
+
+          columnAdder
+            ..add(p.get(carry[column]) < fullAdder.cOut)
+            ..add(p.get(sum[column]) < fullAdder.sum);
+        }
+
+        return columnAdder;
+      },
+    ),
+    (p) => [
+          p.get(rCarryA) <
+              <Logic>[
+                Const(0),
+                ...List.generate(
+                    valA.width - 1,
+                    (index) =>
+                        p.get(sum[(valA.width + valB.width - 2) - index]))
+              ].swizzle(),
+          p.get(rCarryB) <
+              <Logic>[
+                ...List.generate(
+                    valA.width,
+                    (index) =>
+                        p.get(carry[(valA.width + valB.width - 2) - index]))
+              ].swizzle()
+        ],
+  ],
+  reset: reset,
+  resetValues: {product: Const(0)},
+);
 ```
 
 To obtain our final result, we can instantiate the `NBitAdder` module and pass `rCarryA` and `rCarryB` to the module. Finally, we need to swizzle the results from `nBitAdder` and the last four bits from the pipeline.
 
 ```dart
-final nBitAdder = NBitAdder(rCarryA, rCarryB);
+final nBitAdder = NBitAdder(
+      pipeline.get(rCarryA),
+      pipeline.get(rCarryB),
+);
 
 product <=
-    <Logic>[
-      ...List.generate(
-        a.width + 1,
-        (index) => nBitAdder.sum[(a.width) - index],
-      ),
-      ...List.generate(
-        a.width,
-        (index) => pipeline.get(sum[a.width - index - 1]),
-      )
-    ].swizzle();
+<Logic>[
+  ...List.generate(
+    valA.width + 1,
+    (index) => nBitAdder.sum[(valA.width) - index],
+  ),
+  ...List.generate(
+    valA.width,
+    (index) => pipeline.get(sum[valA.width - index - 1]),
+  )
+].swizzle();
 ```
 
 We can test and simulate the final output by creating the `main()` function as below:
@@ -198,24 +266,40 @@ We can test and simulate the final output by creating the `main()` function as b
 void main() async {
   final a = Logic(name: 'a', width: 4);
   final b = Logic(name: 'b', width: 4);
-
+  final reset = Logic(name: 'reset');
   final clk = SimpleClockGenerator(10).clk;
 
-  final csm = CarrySaveMultiplier(a, b, clk);
+  final csm = CarrySaveMultiplier(a, b, clk, reset);
 
   await csm.build();
 
-  a.put(12);
-  b.put(2);
+  // after one cycle, change the value of a and b
+  a.inject(12);
+  b.inject(2);
+  reset.inject(1);
 
   // Attach a waveform dumper so we can see what happens.
   WaveDumper(csm, outputPath: 'csm.vcd');
 
-  Simulator.registerAction(100, () {
-    print('Answer is ${csm.product.value.toInt()}');
+  Simulator.registerAction(10, () {
+    reset.inject(0);
   });
 
-  Simulator.setMaxSimTime(100);
+  Simulator.registerAction(30, () {
+    a.put(10);
+    b.put(11);
+  });
+
+  Simulator.registerAction(60, () {
+    a.put(10);
+    b.put(6);
+  });
+
+  csm.product.changed.listen((event) {
+    print('@t=${Simulator.time}, product is: ${event.newValue.toInt()}');
+  });
+
+  Simulator.setMaxSimTime(150);
 
   await Simulator.run();
 }
